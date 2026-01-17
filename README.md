@@ -1,14 +1,90 @@
-# "Microservices with Go" course project
+# Microservices Ride-Sharing Platform
 
-This is the starter code for the "Microservices with Go" project.
+A backend microservices system for a Uber-style ride-sharing app built with Go, Docker, and Kubernetes.
 
-## Project overview
+## Project Overview
 
-In this project‑driven course, you’ll build the backend microservices system for a Uber‑style ride‑sharing app from the ground up—using Go, Docker, and Kubernetes.
+A fully deployed, horizontally scalable ride-sharing system with clean architecture principles, designed for real traffic and production use.
 
-By the end, you’ll have a fully deployed, horizontally scalable ride‑sharing system that’s ready for real traffic. Plus, you’ll walk away with reusable template for building future distributed projects—accelerating your path to become a lead engineer.
+## Clean Architecture
 
-Check it out at: https://www.selfmadeengineer.com/
+### Folder Structure
+```
+services/trip-service/
+├── cmd/
+│   └── main.go              # Entry point: wires everything together
+├── internal/
+│   ├── domain/              # Business logic layer (entities + interfaces)
+│   │   ├── trip.go          # Core models + repository/service interfaces
+│   │   └── ride_fare.go
+│   ├── service/             # Application layer (use cases)
+│   │   └── service.go       # Business logic implementation
+│   └── infrastructure/      # External concerns (DB, HTTP, gRPC)
+│       ├── http/            # HTTP handlers
+│       ├── repository/      # Database implementations
+│       └── grpc/            # gRPC implementations
+```
+
+### Dependency Flow
+
+**Step 1: Create Repository**
+```go
+// main.go
+inmemRepo := repository.NewInmemRepository()
+// Creates concrete implementation (inmem, postgres, mongo, etc.)
+```
+
+**Step 2: Inject Repository into Service**
+```go
+// main.go
+service := service.NewTripService(inmemRepo)
+// Service receives repo, uses it to call CreateTrip() later
+```
+
+**Step 3: Inject Service into Handler**
+```go
+// main.go
+httpHandler := http.HttpHandler{Service: service}
+// Handler receives service, calls service.CreateTrip() on requests
+```
+
+**Step 4: HTTP Request Flow (Runtime)**
+```go
+// Client → Handler
+POST /preview → httpHandler.HandleTripPreview()
+
+// Handler → Service
+trip, err := s.Service.CreateTrip(ctx, fare)
+
+// Service → Repository Interface
+return s.repo.CreateTrip(ctx, newTrip)
+
+// Repository Implementation (swappable)
+// Option A: In-Memory (current)
+r.trips[trip.ID.Hex()] = trip
+
+// Option B: Database (postgres, mongo, etc.)
+// db.Insert("trips", newTrip)
+```
+
+### Why Clean Architecture?
+- **Testable**: Mock any layer easily
+- **Maintainable**: Clear separation of concerns
+- **Flexible**: Swap DB/HTTP without touching business logic
+- **Scalable**: Add new features without breaking existing code
+
+### Implementation Pattern
+1. **Domain layer** defines interfaces (what we need)
+2. **Infrastructure layer** implements interfaces (how we do it)
+3. **Service layer** orchestrates business logic
+4. **Main** wires everything together via dependency injection
+
+```go
+// main.go example:
+repo := repository.NewInmemRepository()        // Create repo
+service := service.NewTripService(repo)        // Inject repo into service
+handler := http.HttpHandler{Service: service}  // Inject service into handler
+```
 
 ## Trip Scheduling Flow
 [![](https://mermaid.ink/img/pako:eNqNVt9v2jAQ_lcsP21qGvGjZSEPlSpaTX1YxWDVpAmpMvZBIkicOQ6UVf3fd4mdEgcKzQOK47v7vjt_d-aVcimAhnSW5vC3gJTDXcyWiiWzlOCTMaVjHmcs1eQpB3X49Xb88J1p2LLd4d4vFWdTUJuYw-HmnYo3oM5sH34fs10Cqf7Qb6oRFL-bnZLz5c3NnmRIRgrwteJGJmXOuTa2eyP0aFAPyXIyHtWO5YaxN7-PEoNJpNrM1nOSCw3Y_QuPWLq0nBvWl4h30fIos_Bhg5n6vMIVDTgVLyNN5II4LO9L65A8wrbyJimAyAkjwlbSBHBwENisQ2vl80T4pfezapbGRW1RHckkYaloILMNi9dsvgYXtHUQv2E-lXwF-hCccQ5ZE3sNiwZ0A_O2sjSw6oPTbB_nWbT3TB3dGEiykGrLlABBtCQTNp_H-sdP8sUwK3EmkGcS2-lnAQV8rUtwVCchGSvJIc8tJ2KoMGxDjxSZKIVapZZrpovc9_2j4nF7whGPifvM8jxepp8XkW2SzAQmOVKMZXoyF6_Nwq5bunetkLxp2HfIUQR8JQts5Bqz9DJGx3K1ZtZdHAVpCc9mZStkc3s-0WZtTFukOsGnB5QeE7u6PM4gKScQsozktmF_TmuN1qidUHZJa6q9V04m2RowlrV1SnbQc5GUq33YacFL_R2faHtPzxXt0ZN1O-6iXbRW1Zu4HxeiqjTJivk6ziPTcp-U1aXD-NPgZ46a21KL061Qj6kzc38_facarzCyv1tOdGgVk7OUpCipOSxjZEI9moBKWCzwKn8tQ8yojiCBGQ3xVTC1muEV_4Z2rNByuks5DbUqwKNKFsuIhgu2znFlZo79C1Cb4L36R8rmkoav9IWGvW_-1XVn0O_1-kE3GAyHgUd3-Lnb8fu9frc_xKfbvQ6CN4_-qyJ0_KDX7Q86QTDoDAfD66ve23_1IPGQ?type=png)](https://mermaid.live/edit#pako:eNqNVt9v2jAQ_lcsP21qGvGjZSEPlSpaTX1YxWDVpAmpMvZBIkicOQ6UVf3fd4mdEgcKzQOK47v7vjt_d-aVcimAhnSW5vC3gJTDXcyWiiWzlOCTMaVjHmcs1eQpB3X49Xb88J1p2LLd4d4vFWdTUJuYw-HmnYo3oM5sH34fs10Cqf7Qb6oRFL-bnZLz5c3NnmRIRgrwteJGJmXOuTa2eyP0aFAPyXIyHtWO5YaxN7-PEoNJpNrM1nOSCw3Y_QuPWLq0nBvWl4h30fIos_Bhg5n6vMIVDTgVLyNN5II4LO9L65A8wrbyJimAyAkjwlbSBHBwENisQ2vl80T4pfezapbGRW1RHckkYaloILMNi9dsvgYXtHUQv2E-lXwF-hCccQ5ZE3sNiwZ0A_O2sjSw6oPTbB_nWbT3TB3dGEiykGrLlABBtCQTNp_H-sdP8sUwK3EmkGcS2-lnAQV8rUtwVCchGSvJIc8tJ2KoMGxDjxSZKIVapZZrpovc9_2j4nF7whGPifvM8jxepp8XkW2SzAQmOVKMZXoyF6_Nwq5bunetkLxp2HfIUQR8JQts5Bqz9DJGx3K1ZtZdHAVpCc9mZStkc3s-0WZtTFukOsGnB5QeE7u6PM4gKScQsozktmF_TmuN1qidUHZJa6q9V04m2RowlrV1SnbQc5GUq33YacFL_R2faHtPzxXt0ZN1O-6iXbRW1Zu4HxeiqjTJivk6ziPTcp-U1aXD-NPgZ46a21KL061Qj6kzc38_facarzCyv1tOdGgVk7OUpCipOSxjZEI9moBKWCzwKn8tQ8yojiCBGQ3xVTC1muEV_4Z2rNByuks5DbUqwKNKFsuIhgu2znFlZo79C1Cb4L36R8rmkoav9IWGvW_-1XVn0O_1-kE3GAyHgUd3-Lnb8fu9frc_xKfbvQ6CN4_-qyJ0_KDX7Q86QTDoDAfD66ve23_1IPGQ)
