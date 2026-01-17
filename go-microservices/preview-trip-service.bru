@@ -1,0 +1,15 @@
+meta {
+  name: preview-trip-service
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://trip-service:8083/preview
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}
