@@ -1,0 +1,20 @@
+meta {
+  name: POST /route
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://trip-service:8083/route
+  body: json
+  auth: inherit
+}
+
+body:json {
+  { "pickup": {...}, "destination": {...} }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

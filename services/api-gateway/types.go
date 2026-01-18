@@ -7,3 +7,8 @@ type PreviewTripRequest struct {
 	Pickup      types.Coordinate `json:"pickup"`
 	Destination types.Coordinate `json:"destination"`
 }
+
+type GetRouteRequest struct {
+	Pickup      types.Coordinate `json:"pickup"`
+	Destination types.Coordinate `json:"destination"`
+}

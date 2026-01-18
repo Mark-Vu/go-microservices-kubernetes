@@ -1,0 +1,19 @@
+meta {
+  name: OSRM
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://router.project-osrm.org/route/v1/driving/13.388860,52.517037;13.397634,52.529407;13.428555,52.523219?overview=false
+  body: none
+  auth: inherit
+}
+
+params:query {
+  overview: false
+}
+
+settings {
+  encodeUrl: true
+}

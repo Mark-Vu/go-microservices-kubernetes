@@ -69,3 +69,55 @@ func handleTripPreview(w http.ResponseWriter, r *http.Request) {
 	response := contracts.APIResponse{Data: tripResult}
 	httputil.WriteJson(w, http.StatusOK, response)
 }
+
+func handleGetRoute(w http.ResponseWriter, r *http.Request) {
+	// 1. Parse the incoming request
+	var reqBody GetRouteRequest
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&reqBody); err != nil {
+		httputil.WriteJson(w, http.StatusBadRequest, map[string]string{
+			"error": "invalid JSON payload",
+		})
+		return
+	}
+
+	// 2. Marshal the request body
+	jsonData, err := json.Marshal(reqBody)
+	if err != nil {
+		httputil.WriteJson(w, http.StatusInternalServerError, map[string]string{"error": "internal encoding error"})
+		return
+	}
+
+	// 3. Create a context with timeout
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	// 4. Build the request to the trip-service
+	targetURL := "http://trip-service:8083/route"
+	outgoingReq, err := http.NewRequestWithContext(ctx, "POST", targetURL, bytes.NewBuffer(jsonData))
+	if err != nil {
+		httputil.WriteJson(w, http.StatusInternalServerError, map[string]string{"error": "failed to create internal request"})
+		return
+	}
+	outgoingReq.Header.Set("Content-Type", "application/json")
+
+	// 5. Execute the call
+	client := &http.Client{}
+	resp, err := client.Do(outgoingReq)
+	if err != nil {
+		httputil.WriteJson(w, http.StatusServiceUnavailable, map[string]string{"error": "trip-service is unreachable"})
+		return
+	}
+	defer resp.Body.Close()
+
+	// 6. Parse the response
+	var routeResult any
+	if err := json.NewDecoder(resp.Body).Decode(&routeResult); err != nil {
+		httputil.WriteJson(w, http.StatusInternalServerError, map[string]string{"error": "failed to parse response"})
+		return
+	}
+
+	response := contracts.APIResponse{Data: routeResult}
+	httputil.WriteJson(w, http.StatusOK, response)
+}

@@ -24,6 +24,7 @@ func main() {
 	httpHandler := h.HttpHandler{Service: service}
 
 	mux.HandleFunc("POST /preview", httpHandler.HandleTripPreview)
+	mux.HandleFunc("POST /route", httpHandler.HandleGetRoute)
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
