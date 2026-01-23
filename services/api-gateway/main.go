@@ -22,6 +22,8 @@ func main() {
 
 	mux.HandleFunc("POST /trip/preview", handleTripPreview)
 	mux.HandleFunc("POST /trip/route", handleGetRoute)
+	mux.HandleFunc("/ws/drivers", handleDriversWebsocket)
+	mux.HandleFunc("/ws/riders", handleRidersWebsocket)
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
