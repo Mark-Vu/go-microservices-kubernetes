@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package trip.v1;
+
+// allow go generate codes under
+// ./shared/proto/trip/
+//      trip.pb.go
+//      trip_grpc.pb.go
+option go_package = "shared/proto/trip/v1;tripv1";
+
+service TripService {
+  rpc PreviewTrip(PreviewTripRequest) returns (PreviewTripResponse);
+}
+
+message PreviewTripRequest {
+  string user_id = 1;
+  Coordinate start_location = 2;
+  Coordinate end_location = 3;
+}
+
+message PreviewTripResponse {
+  string trip_id = 1;
+  Route route = 2;
+  repeated RideFare ride_fare = 3; // Array of fares [fares for van, fares for luxury, ..]
+}
+
+message Route {
+  repeated Geometry geometry = 1; // Array of Geometry
+  double distance = 2;
+  double duration = 3;
+}
+
+message Geometry {
+  repeated Coordinate coordinates = 1;
+}
+
+message Coordinate {
+  double latitude = 1;
+  double longtitude = 2;
+}
+
+message RideFare {
+  string id = 1;
+  string user_id = 2;
+  string package_slug = 3;
+  double total_price_in_cents = 4;
+}

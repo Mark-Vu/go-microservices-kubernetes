@@ -4,15 +4,28 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 
+	grpcclients "ride-sharing/services/api-gateway/grpc_clients"
 	"ride-sharing/shared/contracts"
 	"ride-sharing/shared/httputil"
+	pb "ride-sharing/shared/proto/trip/v1"
 )
 
-func handleTripPreview(w http.ResponseWriter, r *http.Request) {
-	// 1. Parse the incoming request from the user/frontend
+type Handler struct {
+	tripClient *grpcclients.TripServiceClient
+}
+
+func NewHandler(tripClient *grpcclients.TripServiceClient) *Handler {
+	return &Handler{
+		tripClient: tripClient,
+	}
+}
+
+func (h *Handler) handleTripPreview(w http.ResponseWriter, r *http.Request) {
+	// Parse the incoming request from the user/frontend
 	var reqBody PreviewTripRequest
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
@@ -30,39 +43,27 @@ func handleTripPreview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonData, err := json.Marshal(reqBody)
-	if err != nil {
-		httputil.WriteJson(w, http.StatusInternalServerError, map[string]string{"error": "internal encoding error"})
-		return
-	}
-
-	// 4. Create a context with a timeout (Best practice for inter-service calls)
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
 
-	// 5. Build the request to the internal trip-service
-	targetURL := "http://trip-service:8083/preview"
-	outgoingReq, err := http.NewRequestWithContext(ctx, "POST", targetURL, bytes.NewBuffer(jsonData))
+	// Call Trip service via gRPC
+	tripResult, err := h.tripClient.Client.PreviewTrip(ctx, &pb.PreviewTripRequest{
+		UserId: reqBody.UserID,
+		StartLocation: &pb.Coordinate{
+			Latitude:   reqBody.Pickup.Latitude,
+			Longtitude: reqBody.Pickup.Longitude,
+		},
+		EndLocation: &pb.Coordinate{
+			Latitude:   reqBody.Destination.Latitude,
+			Longtitude: reqBody.Destination.Longitude,
+		},
+	})
+
 	if err != nil {
-		httputil.WriteJson(w, http.StatusInternalServerError, map[string]string{"error": "failed to create internal request"})
-		return
-	}
-	outgoingReq.Header.Set("Content-Type", "application/json")
-
-	// 6. Execute the call
-	client := &http.Client{}
-	resp, err := client.Do(outgoingReq)
-	if err != nil {
-		httputil.WriteJson(w, http.StatusServiceUnavailable, map[string]string{"error": "trip-service is unreachable"})
-		return
-	}
-
-	// 7. IMPORTANT: Close the body of the response from trip-service
-	defer resp.Body.Close()
-
-	var tripResult any
-	if err := json.NewDecoder(resp.Body).Decode(&tripResult); err != nil {
-		httputil.WriteJson(w, http.StatusInternalServerError, map[string]string{"error": "failed to parse response"})
+		log.Printf("PreviewTrip gRPC error: %v", err)
+		httputil.WriteJson(w, http.StatusServiceUnavailable, map[string]string{
+			"error": "trip-service error",
+		})
 		return
 	}
 
@@ -70,7 +71,7 @@ func handleTripPreview(w http.ResponseWriter, r *http.Request) {
 	httputil.WriteJson(w, http.StatusOK, response)
 }
 
-func handleGetRoute(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) handleGetRoute(w http.ResponseWriter, r *http.Request) {
 	// 1. Parse the incoming request
 	var reqBody GetRouteRequest
 	decoder := json.NewDecoder(r.Body)

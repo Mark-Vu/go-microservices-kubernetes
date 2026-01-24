@@ -1,5 +1,5 @@
 PROTO_DIR := proto
-PROTO_SRC := $(wildcard $(PROTO_DIR)/*.proto)
+PROTO_SRC := $(shell find $(PROTO_DIR) -name '*.proto')
 GO_OUT := .
 
 .PHONY: generate-proto
