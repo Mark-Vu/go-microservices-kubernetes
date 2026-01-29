@@ -1,11 +1,13 @@
-package main
+package handlers
 
 import (
 	"log"
 	"net/http"
+	"strings"
+
+	"ride-sharing/services/api-gateway/dto"
 	"ride-sharing/shared/contracts"
 	"ride-sharing/shared/util"
-	"strings"
 
 	"github.com/gorilla/websocket"
 )
@@ -23,7 +25,8 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func handleRidersWebsocket(w http.ResponseWriter, r *http.Request) {
+// HandleRidersWebsocket handles WebSocket connections for riders
+func HandleRidersWebsocket(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Printf("WebSocket upgrade failed: %v", err)
@@ -49,7 +52,8 @@ func handleRidersWebsocket(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleDriversWebsocket(w http.ResponseWriter, r *http.Request) {
+// HandleDriversWebsocket handles WebSocket connections for drivers
+func HandleDriversWebsocket(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Printf("WebSocket upgrade failed: %v", err)
@@ -72,7 +76,7 @@ func handleDriversWebsocket(w http.ResponseWriter, r *http.Request) {
 
 	msg := contracts.WSMessage{
 		Type: "driver.cmd.register",
-		Data: Driver{
+		Data: dto.Driver{
 			Id:             userID,
 			Name:           "Tiago",
 			ProfilePicture: util.GetRandomAvatar(1),

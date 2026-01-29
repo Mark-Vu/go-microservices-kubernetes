@@ -10,6 +10,8 @@ import (
 	"time"
 
 	grpcclients "ride-sharing/services/api-gateway/grpc_clients"
+	"ride-sharing/services/api-gateway/handlers"
+	"ride-sharing/services/api-gateway/middleware"
 	"ride-sharing/shared/env"
 )
 
@@ -20,10 +22,10 @@ var (
 func main() {
 	log.Println("Starting API Gateway")
 
-	// Initialize gRPC trip service client with retry
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
+	// Initialize gRPC trip service client with retry
 	tripClient, err := InitgRPCServiceWithRetry(
 		ctx,
 		"trip-service",
@@ -40,15 +42,18 @@ func main() {
 
 	log.Println("Trip service gRPC client initialized successfully")
 
-	// Create handler
-	handler := NewHandler(tripClient)
+	// Create handlers with dependencies
+	tripHandler := handlers.NewTripHandler(tripClient)
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("POST /trip/preview", EnableCORS(handler.handleTripPreview))
-	mux.HandleFunc("POST /trip/route", EnableCORS(handler.handleGetRoute))
-	mux.HandleFunc("/ws/drivers", handleDriversWebsocket)
-	mux.HandleFunc("/ws/riders", handleRidersWebsocket)
+	// Trip endpoints
+	mux.HandleFunc("POST /trip/preview", middleware.EnableCORS(tripHandler.HandleTripPreview))
+	mux.HandleFunc("POST /trip/route", middleware.EnableCORS(tripHandler.HandleGetRoute))
+
+	// WebSocket endpoints
+	mux.HandleFunc("/ws/drivers", handlers.HandleDriversWebsocket)
+	mux.HandleFunc("/ws/riders", handlers.HandleRidersWebsocket)
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

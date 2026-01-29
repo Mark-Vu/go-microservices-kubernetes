@@ -1,43 +1,77 @@
 package main
 
 import (
+	"context"
 	"log"
-	"net/http"
-	h "ride-sharing/services/trip-service/internal/infrastructure/http"
+	"net"
+	"os"
+	"os/signal"
 	"ride-sharing/services/trip-service/internal/infrastructure/repository"
 	"ride-sharing/services/trip-service/internal/service"
 	"ride-sharing/shared/env"
+	"syscall"
+	"time"
+
+	"google.golang.org/grpc"
+
+	g "ride-sharing/services/trip-service/internal/infrastructure/grpc"
 )
 
 var (
-	httpAddr = env.GetString("HTTP_ADDR", ":8083")
+	httpAddr = env.GetString("HTTP_ADDR", ":8080")
 )
 
 func main() {
-	log.Printf("Starting trip-service at http://localhost%s", httpAddr)
-
+	lis, err := net.Listen("tcp", httpAddr)
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
 	inmemRepo := repository.NewInmemRepository()
 	service := service.NewTripService(inmemRepo)
+	// Starting grpc server
+	grpcServer := grpc.NewServer()
+	g.NewGRPCHandler(grpcServer, service)
 
-	mux := http.NewServeMux()
+	log.Printf("Starting gRPC trip-service on port %s", lis.Addr().String())
+	serverError := make(chan error, 1)
+	go func() {
+		if err := grpcServer.Serve(lis); err != nil {
+			serverError <- err
+		}
+	}()
 
-	httpHandler := h.HttpHandler{Service: service}
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 
-	mux.HandleFunc("POST /preview", httpHandler.HandleTripPreview)
-	mux.HandleFunc("POST /route", httpHandler.HandleGetRoute)
-
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("Hello from API Gateway"))
-	})
-
-	server := &http.Server{
-		Addr:    httpAddr,
-		Handler: mux,
+	select {
+	case sig := <-sigCh:
+		log.Printf("received signal %s: starting graceful shutdown", sig)
+	case err := <-serverError:
+		// If Serve returns immediately (e.g., listener error), exit.
+		if err != nil {
+			log.Fatalf("gRPC serve error: %v", err)
+		}
+		return
 	}
 
-	if err := server.ListenAndServe(); err != nil {
-		log.Printf("HTTP server error: %v", err)
+	timeout := 30 * time.Second
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	done := make(chan struct{})
+	go func() {
+		grpcServer.GracefulStop() // stops accepting new conns/RPCs; waits for in-flight RPCs
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		log.Println("graceful shutdown complete")
+	case <-ctx.Done():
+		log.Printf("graceful shutdown timed out after %s; forcing stop", timeout)
+		grpcServer.Stop()
 	}
+
+	_ = lis.Close()
 
 }

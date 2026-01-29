@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"bytes"
@@ -8,25 +8,28 @@ import (
 	"net/http"
 	"time"
 
+	"ride-sharing/services/api-gateway/dto"
 	grpcclients "ride-sharing/services/api-gateway/grpc_clients"
 	"ride-sharing/shared/contracts"
 	"ride-sharing/shared/httputil"
-	pb "ride-sharing/shared/proto/trip/v1"
 )
 
-type Handler struct {
+// TripHandler handles trip-related HTTP requests
+type TripHandler struct {
 	tripClient *grpcclients.TripServiceClient
 }
 
-func NewHandler(tripClient *grpcclients.TripServiceClient) *Handler {
-	return &Handler{
+// NewTripHandler creates a new TripHandler with dependencies injected
+func NewTripHandler(tripClient *grpcclients.TripServiceClient) *TripHandler {
+	return &TripHandler{
 		tripClient: tripClient,
 	}
 }
 
-func (h *Handler) handleTripPreview(w http.ResponseWriter, r *http.Request) {
+// HandleTripPreview handles preview trip requests via gRPC
+func (h *TripHandler) HandleTripPreview(w http.ResponseWriter, r *http.Request) {
 	// Parse the incoming request from the user/frontend
-	var reqBody PreviewTripRequest
+	var reqBody dto.PreviewTripRequest
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&reqBody); err != nil {
@@ -47,22 +50,12 @@ func (h *Handler) handleTripPreview(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	// Call Trip service via gRPC
-	tripResult, err := h.tripClient.Client.PreviewTrip(ctx, &pb.PreviewTripRequest{
-		UserId: reqBody.UserID,
-		StartLocation: &pb.Coordinate{
-			Latitude:   reqBody.Pickup.Latitude,
-			Longtitude: reqBody.Pickup.Longitude,
-		},
-		EndLocation: &pb.Coordinate{
-			Latitude:   reqBody.Destination.Latitude,
-			Longtitude: reqBody.Destination.Longitude,
-		},
-	})
+	tripResult, err := h.tripClient.Client.PreviewTrip(ctx, reqBody.ToProto())
 
 	if err != nil {
 		log.Printf("PreviewTrip gRPC error: %v", err)
-		httputil.WriteJson(w, http.StatusServiceUnavailable, map[string]string{
-			"error": "trip-service error",
+		httputil.WriteJson(w, http.StatusInternalServerError, map[string]string{
+			"error": "internal server error",
 		})
 		return
 	}
@@ -71,9 +64,10 @@ func (h *Handler) handleTripPreview(w http.ResponseWriter, r *http.Request) {
 	httputil.WriteJson(w, http.StatusOK, response)
 }
 
-func (h *Handler) handleGetRoute(w http.ResponseWriter, r *http.Request) {
-	// 1. Parse the incoming request
-	var reqBody GetRouteRequest
+// HandleGetRoute handles route calculation requests via HTTP (legacy)
+func (h *TripHandler) HandleGetRoute(w http.ResponseWriter, r *http.Request) {
+	// Parse the incoming request
+	var reqBody dto.GetRouteRequest
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&reqBody); err != nil {
@@ -83,18 +77,18 @@ func (h *Handler) handleGetRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 2. Marshal the request body
+	// Marshal the request body
 	jsonData, err := json.Marshal(reqBody)
 	if err != nil {
 		httputil.WriteJson(w, http.StatusInternalServerError, map[string]string{"error": "internal encoding error"})
 		return
 	}
 
-	// 3. Create a context with timeout
+	// Create a context with timeout
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
-	// 4. Build the request to the trip-service
+	// Build the request to the trip-service
 	targetURL := "http://trip-service:8083/route"
 	outgoingReq, err := http.NewRequestWithContext(ctx, "POST", targetURL, bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -103,7 +97,7 @@ func (h *Handler) handleGetRoute(w http.ResponseWriter, r *http.Request) {
 	}
 	outgoingReq.Header.Set("Content-Type", "application/json")
 
-	// 5. Execute the call
+	// Execute the call
 	client := &http.Client{}
 	resp, err := client.Do(outgoingReq)
 	if err != nil {
@@ -112,7 +106,7 @@ func (h *Handler) handleGetRoute(w http.ResponseWriter, r *http.Request) {
 	}
 	defer resp.Body.Close()
 
-	// 6. Parse the response
+	// Parse the response
 	var routeResult any
 	if err := json.NewDecoder(resp.Body).Decode(&routeResult); err != nil {
 		httputil.WriteJson(w, http.StatusInternalServerError, map[string]string{"error": "failed to parse response"})

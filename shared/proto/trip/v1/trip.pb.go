@@ -248,7 +248,7 @@ func (x *Geometry) GetCoordinates() []*Coordinate {
 type Coordinate struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Latitude      float64                `protobuf:"fixed64,1,opt,name=latitude,proto3" json:"latitude,omitempty"`
-	Longtitude    float64                `protobuf:"fixed64,2,opt,name=longtitude,proto3" json:"longtitude,omitempty"`
+	Longitude     float64                `protobuf:"fixed64,2,opt,name=longitude,proto3" json:"longitude,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -290,9 +290,9 @@ func (x *Coordinate) GetLatitude() float64 {
 	return 0
 }
 
-func (x *Coordinate) GetLongtitude() float64 {
+func (x *Coordinate) GetLongitude() float64 {
 	if x != nil {
-		return x.Longtitude
+		return x.Longitude
 	}
 	return 0
 }
@@ -383,13 +383,11 @@ const file_trip_v1_trip_proto_rawDesc = "" +
 	"\bdistance\x18\x02 \x01(\x01R\bdistance\x12\x1a\n" +
 	"\bduration\x18\x03 \x01(\x01R\bduration\"A\n" +
 	"\bGeometry\x125\n" +
-	"\vcoordinates\x18\x01 \x03(\v2\x13.trip.v1.CoordinateR\vcoordinates\"H\n" +
+	"\vcoordinates\x18\x01 \x03(\v2\x13.trip.v1.CoordinateR\vcoordinates\"F\n" +
 	"\n" +
 	"Coordinate\x12\x1a\n" +
-	"\blatitude\x18\x01 \x01(\x01R\blatitude\x12\x1e\n" +
-	"\n" +
-	"longtitude\x18\x02 \x01(\x01R\n" +
-	"longtitude\"\x87\x01\n" +
+	"\blatitude\x18\x01 \x01(\x01R\blatitude\x12\x1c\n" +
+	"\tlongitude\x18\x02 \x01(\x01R\tlongitude\"\x87\x01\n" +
 	"\bRideFare\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12!\n" +

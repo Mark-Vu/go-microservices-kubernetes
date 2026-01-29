@@ -16,7 +16,7 @@ type TripServiceClient struct {
 func NewTripServiceClient() (*TripServiceClient, error) {
 	tripServiceUrl := os.Getenv("TRIP_SERVICE_URL")
 	if tripServiceUrl == "" {
-		tripServiceUrl = "trip-service:9093"
+		tripServiceUrl = "trip-service:8080"
 	}
 
 	conn, err := grpc.NewClient(tripServiceUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))

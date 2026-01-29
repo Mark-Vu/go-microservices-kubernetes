@@ -36,7 +36,7 @@ message Geometry {
 
 message Coordinate {
   double latitude = 1;
-  double longtitude = 2;
+  double longitude = 2;
 }
 
 message RideFare {
