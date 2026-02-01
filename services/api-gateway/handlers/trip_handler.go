@@ -64,6 +64,43 @@ func (h *TripHandler) HandleTripPreview(w http.ResponseWriter, r *http.Request) 
 	httputil.WriteJson(w, http.StatusOK, response)
 }
 
+func (h *TripHandler) HandleTripStart(w http.ResponseWriter, r *http.Request) {
+	// Parse the incoming request from the user/frontend
+	var reqBody dto.StartTripRequest
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&reqBody); err != nil {
+		httputil.WriteJson(w, http.StatusBadRequest, map[string]string{
+			"error": "invalid JSON payload",
+		})
+		return
+	}
+
+	if reqBody.UserID == "" {
+		httputil.WriteJson(w, http.StatusBadRequest, map[string]string{
+			"error": "user ID is required",
+		})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	// Call Trip service via gRPC
+	tripResult, err := h.tripClient.Client.CreateTrip(ctx, reqBody.ToProto())
+
+	if err != nil {
+		log.Printf("PreviewTrip gRPC error: %v", err)
+		httputil.WriteJson(w, http.StatusInternalServerError, map[string]string{
+			"error": "internal server error",
+		})
+		return
+	}
+
+	response := contracts.APIResponse{Data: tripResult}
+	httputil.WriteJson(w, http.StatusOK, response)
+}
+
 // HandleGetRoute handles route calculation requests via HTTP (legacy)
 func (h *TripHandler) HandleGetRoute(w http.ResponseWriter, r *http.Request) {
 	// Parse the incoming request

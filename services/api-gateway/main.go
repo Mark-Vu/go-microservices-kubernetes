@@ -49,6 +49,7 @@ func main() {
 
 	// Trip endpoints
 	mux.HandleFunc("POST /trip/preview", middleware.EnableCORS(tripHandler.HandleTripPreview))
+	mux.HandleFunc("POST /trip/start", middleware.EnableCORS(tripHandler.HandleTripStart))
 	mux.HandleFunc("POST /trip/route", middleware.EnableCORS(tripHandler.HandleGetRoute))
 
 	// WebSocket endpoints
