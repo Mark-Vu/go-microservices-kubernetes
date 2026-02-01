@@ -14,15 +14,15 @@ service TripService {
 }
 
 message PreviewTripRequest {
-  string user_id = 1;
-  Coordinate start_location = 2;
-  Coordinate end_location = 3;
+  string userID = 1;
+  Coordinate startLocation = 2;
+  Coordinate endLocation = 3;
 }
 
 message PreviewTripResponse {
-  string trip_id = 1;
+  string tripID = 1;
   Route route = 2;
-  repeated RideFare ride_fare = 3; // Array of fares [fares for van, fares for luxury, ..]
+  repeated RideFare rideFares = 3; // Array of fares [fares for van, fares for luxury, ..]
 }
 
 message Route {
@@ -42,16 +42,16 @@ message Coordinate {
 
 message RideFare {
   string id = 1;
-  string user_id = 2;
-  string package_slug = 3;
-  double total_price_in_cents = 4;
+  string userID = 2;
+  string packageSlug = 3;
+  double totalPriceInCents = 4;
 }
 
 message CreateTripRequest {
-  string ride_fare_id = 1;
-  string user_id = 2;
+  string rideFareID = 1;
+  string userID = 2;
 }
 
 message CreateTripResponse {
-  string trip_id = 1;
+  string tripID = 1;
 }

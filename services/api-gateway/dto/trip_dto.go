@@ -21,7 +21,7 @@ type GetRouteRequest struct {
 
 func (r *PreviewTripRequest) ToProto() *pb.PreviewTripRequest {
 	return &pb.PreviewTripRequest{
-		UserId: r.UserID,
+		UserID: r.UserID,
 		StartLocation: &pb.Coordinate{
 			Latitude:  r.Pickup.Latitude,
 			Longitude: r.Pickup.Longitude,
@@ -40,7 +40,7 @@ type StartTripRequest struct {
 
 func (c *StartTripRequest) ToProto() *pb.CreateTripRequest {
 	return &pb.CreateTripRequest{
-		RideFareId: c.RideFareID,
-		UserId:     c.UserID,
+		RideFareID: c.RideFareID,
+		UserID:     c.UserID,
 	}
 }

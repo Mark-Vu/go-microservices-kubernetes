@@ -27,10 +27,10 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	inmemRepo := repository.NewInmemRepository()
-	service := service.NewTripService(inmemRepo)
+	svc := service.NewTripService(inmemRepo)
 	// Starting grpc server
 	grpcServer := grpc.NewServer()
-	g.NewGRPCHandler(grpcServer, service)
+	g.NewGRPCHandler(grpcServer, svc)
 
 	log.Printf("Starting gRPC trip-service on port %s", lis.Addr().String())
 	serverError := make(chan error, 1)

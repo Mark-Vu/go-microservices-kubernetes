@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"ride-sharing/services/trip-service/internal/domain"
 	pb "ride-sharing/shared/proto/trip/v1"
 	"ride-sharing/shared/types"
 )
@@ -32,4 +33,17 @@ func osrmToProtoRoute(o *types.OsrmApiResponse) *pb.Route {
 		Distance: route.Distance,
 		Duration: route.Duration,
 	}
+}
+
+func ToProtoRideFares(fares []*domain.RideFareModel) []*pb.RideFare {
+	protoFares := make([]*pb.RideFare, len(fares))
+	for i, fare := range fares {
+		protoFares[i] = &pb.RideFare{
+			Id:                fare.ID.Hex(),
+			UserID:            fare.UserID,
+			PackageSlug:       fare.PackageSlug,
+			TotalPriceInCents: fare.TotalPriceInCents,
+		}
+	}
+	return protoFares
 }

@@ -35,9 +35,15 @@ func (h *gRPCHandler) PreviewTrip(ctx context.Context, req *pb.PreviewTripReques
 		return nil, status.Errorf(codes.Internal, "failed to get route: %v", err)
 	}
 
+	estimatedFares, err := h.service.EstimatePackagesPriceWithRoute(ctx, trip)
+	if err != nil {
+		log.Println(err)
+		return nil, status.Errorf(codes.Internal, "failed to estimate packages price: %v", err)
+	}
+
 	return &pb.PreviewTripResponse{
-		Route:    osrmToProtoRoute(trip),
-		RideFare: []*pb.RideFare{},
+		Route:     osrmToProtoRoute(trip),
+		RideFares: ToProtoRideFares(estimatedFares),
 	}, nil
 }
 

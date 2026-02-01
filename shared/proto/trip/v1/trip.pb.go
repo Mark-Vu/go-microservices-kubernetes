@@ -23,9 +23,9 @@ const (
 
 type PreviewTripRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	StartLocation *Coordinate            `protobuf:"bytes,2,opt,name=start_location,json=startLocation,proto3" json:"start_location,omitempty"`
-	EndLocation   *Coordinate            `protobuf:"bytes,3,opt,name=end_location,json=endLocation,proto3" json:"end_location,omitempty"`
+	UserID        string                 `protobuf:"bytes,1,opt,name=userID,proto3" json:"userID,omitempty"`
+	StartLocation *Coordinate            `protobuf:"bytes,2,opt,name=startLocation,proto3" json:"startLocation,omitempty"`
+	EndLocation   *Coordinate            `protobuf:"bytes,3,opt,name=endLocation,proto3" json:"endLocation,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -60,9 +60,9 @@ func (*PreviewTripRequest) Descriptor() ([]byte, []int) {
 	return file_trip_v1_trip_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *PreviewTripRequest) GetUserId() string {
+func (x *PreviewTripRequest) GetUserID() string {
 	if x != nil {
-		return x.UserId
+		return x.UserID
 	}
 	return ""
 }
@@ -83,9 +83,9 @@ func (x *PreviewTripRequest) GetEndLocation() *Coordinate {
 
 type PreviewTripResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	TripId        string                 `protobuf:"bytes,1,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	TripID        string                 `protobuf:"bytes,1,opt,name=tripID,proto3" json:"tripID,omitempty"`
 	Route         *Route                 `protobuf:"bytes,2,opt,name=route,proto3" json:"route,omitempty"`
-	RideFare      []*RideFare            `protobuf:"bytes,3,rep,name=ride_fare,json=rideFare,proto3" json:"ride_fare,omitempty"` // Array of fares [fares for van, fares for luxury, ..]
+	RideFares     []*RideFare            `protobuf:"bytes,3,rep,name=rideFares,proto3" json:"rideFares,omitempty"` // Array of fares [fares for van, fares for luxury, ..]
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -120,9 +120,9 @@ func (*PreviewTripResponse) Descriptor() ([]byte, []int) {
 	return file_trip_v1_trip_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *PreviewTripResponse) GetTripId() string {
+func (x *PreviewTripResponse) GetTripID() string {
 	if x != nil {
-		return x.TripId
+		return x.TripID
 	}
 	return ""
 }
@@ -134,9 +134,9 @@ func (x *PreviewTripResponse) GetRoute() *Route {
 	return nil
 }
 
-func (x *PreviewTripResponse) GetRideFare() []*RideFare {
+func (x *PreviewTripResponse) GetRideFares() []*RideFare {
 	if x != nil {
-		return x.RideFare
+		return x.RideFares
 	}
 	return nil
 }
@@ -300,9 +300,9 @@ func (x *Coordinate) GetLongitude() float64 {
 type RideFare struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
 	Id                string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	UserId            string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	PackageSlug       string                 `protobuf:"bytes,3,opt,name=package_slug,json=packageSlug,proto3" json:"package_slug,omitempty"`
-	TotalPriceInCents float64                `protobuf:"fixed64,4,opt,name=total_price_in_cents,json=totalPriceInCents,proto3" json:"total_price_in_cents,omitempty"`
+	UserID            string                 `protobuf:"bytes,2,opt,name=userID,proto3" json:"userID,omitempty"`
+	PackageSlug       string                 `protobuf:"bytes,3,opt,name=packageSlug,proto3" json:"packageSlug,omitempty"`
+	TotalPriceInCents float64                `protobuf:"fixed64,4,opt,name=totalPriceInCents,proto3" json:"totalPriceInCents,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -344,9 +344,9 @@ func (x *RideFare) GetId() string {
 	return ""
 }
 
-func (x *RideFare) GetUserId() string {
+func (x *RideFare) GetUserID() string {
 	if x != nil {
-		return x.UserId
+		return x.UserID
 	}
 	return ""
 }
@@ -367,8 +367,8 @@ func (x *RideFare) GetTotalPriceInCents() float64 {
 
 type CreateTripRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	RideFareId    string                 `protobuf:"bytes,1,opt,name=ride_fare_id,json=rideFareId,proto3" json:"ride_fare_id,omitempty"`
-	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	RideFareID    string                 `protobuf:"bytes,1,opt,name=rideFareID,proto3" json:"rideFareID,omitempty"`
+	UserID        string                 `protobuf:"bytes,2,opt,name=userID,proto3" json:"userID,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -403,23 +403,23 @@ func (*CreateTripRequest) Descriptor() ([]byte, []int) {
 	return file_trip_v1_trip_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *CreateTripRequest) GetRideFareId() string {
+func (x *CreateTripRequest) GetRideFareID() string {
 	if x != nil {
-		return x.RideFareId
+		return x.RideFareID
 	}
 	return ""
 }
 
-func (x *CreateTripRequest) GetUserId() string {
+func (x *CreateTripRequest) GetUserID() string {
 	if x != nil {
-		return x.UserId
+		return x.UserID
 	}
 	return ""
 }
 
 type CreateTripResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	TripId        string                 `protobuf:"bytes,1,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	TripID        string                 `protobuf:"bytes,1,opt,name=tripID,proto3" json:"tripID,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -454,9 +454,9 @@ func (*CreateTripResponse) Descriptor() ([]byte, []int) {
 	return file_trip_v1_trip_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *CreateTripResponse) GetTripId() string {
+func (x *CreateTripResponse) GetTripID() string {
 	if x != nil {
-		return x.TripId
+		return x.TripID
 	}
 	return ""
 }
@@ -465,15 +465,15 @@ var File_trip_v1_trip_proto protoreflect.FileDescriptor
 
 const file_trip_v1_trip_proto_rawDesc = "" +
 	"\n" +
-	"\x12trip/v1/trip.proto\x12\atrip.v1\"\xa1\x01\n" +
-	"\x12PreviewTripRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12:\n" +
-	"\x0estart_location\x18\x02 \x01(\v2\x13.trip.v1.CoordinateR\rstartLocation\x126\n" +
-	"\fend_location\x18\x03 \x01(\v2\x13.trip.v1.CoordinateR\vendLocation\"\x84\x01\n" +
-	"\x13PreviewTripResponse\x12\x17\n" +
-	"\atrip_id\x18\x01 \x01(\tR\x06tripId\x12$\n" +
-	"\x05route\x18\x02 \x01(\v2\x0e.trip.v1.RouteR\x05route\x12.\n" +
-	"\tride_fare\x18\x03 \x03(\v2\x11.trip.v1.RideFareR\brideFare\"n\n" +
+	"\x12trip/v1/trip.proto\x12\atrip.v1\"\x9e\x01\n" +
+	"\x12PreviewTripRequest\x12\x16\n" +
+	"\x06userID\x18\x01 \x01(\tR\x06userID\x129\n" +
+	"\rstartLocation\x18\x02 \x01(\v2\x13.trip.v1.CoordinateR\rstartLocation\x125\n" +
+	"\vendLocation\x18\x03 \x01(\v2\x13.trip.v1.CoordinateR\vendLocation\"\x84\x01\n" +
+	"\x13PreviewTripResponse\x12\x16\n" +
+	"\x06tripID\x18\x01 \x01(\tR\x06tripID\x12$\n" +
+	"\x05route\x18\x02 \x01(\v2\x0e.trip.v1.RouteR\x05route\x12/\n" +
+	"\trideFares\x18\x03 \x03(\v2\x11.trip.v1.RideFareR\trideFares\"n\n" +
 	"\x05Route\x12-\n" +
 	"\bgeometry\x18\x01 \x03(\v2\x11.trip.v1.GeometryR\bgeometry\x12\x1a\n" +
 	"\bdistance\x18\x02 \x01(\x01R\bdistance\x12\x1a\n" +
@@ -483,18 +483,19 @@ const file_trip_v1_trip_proto_rawDesc = "" +
 	"\n" +
 	"Coordinate\x12\x1a\n" +
 	"\blatitude\x18\x01 \x01(\x01R\blatitude\x12\x1c\n" +
-	"\tlongitude\x18\x02 \x01(\x01R\tlongitude\"\x87\x01\n" +
+	"\tlongitude\x18\x02 \x01(\x01R\tlongitude\"\x82\x01\n" +
 	"\bRideFare\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\x12!\n" +
-	"\fpackage_slug\x18\x03 \x01(\tR\vpackageSlug\x12/\n" +
-	"\x14total_price_in_cents\x18\x04 \x01(\x01R\x11totalPriceInCents\"N\n" +
-	"\x11CreateTripRequest\x12 \n" +
-	"\fride_fare_id\x18\x01 \x01(\tR\n" +
-	"rideFareId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\"-\n" +
-	"\x12CreateTripResponse\x12\x17\n" +
-	"\atrip_id\x18\x01 \x01(\tR\x06tripId2\x9e\x01\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
+	"\x06userID\x18\x02 \x01(\tR\x06userID\x12 \n" +
+	"\vpackageSlug\x18\x03 \x01(\tR\vpackageSlug\x12,\n" +
+	"\x11totalPriceInCents\x18\x04 \x01(\x01R\x11totalPriceInCents\"K\n" +
+	"\x11CreateTripRequest\x12\x1e\n" +
+	"\n" +
+	"rideFareID\x18\x01 \x01(\tR\n" +
+	"rideFareID\x12\x16\n" +
+	"\x06userID\x18\x02 \x01(\tR\x06userID\",\n" +
+	"\x12CreateTripResponse\x12\x16\n" +
+	"\x06tripID\x18\x01 \x01(\tR\x06tripID2\x9e\x01\n" +
 	"\vTripService\x12H\n" +
 	"\vPreviewTrip\x12\x1b.trip.v1.PreviewTripRequest\x1a\x1c.trip.v1.PreviewTripResponse\x12E\n" +
 	"\n" +
@@ -524,10 +525,10 @@ var file_trip_v1_trip_proto_goTypes = []any{
 	(*CreateTripResponse)(nil),  // 7: trip.v1.CreateTripResponse
 }
 var file_trip_v1_trip_proto_depIdxs = []int32{
-	4, // 0: trip.v1.PreviewTripRequest.start_location:type_name -> trip.v1.Coordinate
-	4, // 1: trip.v1.PreviewTripRequest.end_location:type_name -> trip.v1.Coordinate
+	4, // 0: trip.v1.PreviewTripRequest.startLocation:type_name -> trip.v1.Coordinate
+	4, // 1: trip.v1.PreviewTripRequest.endLocation:type_name -> trip.v1.Coordinate
 	2, // 2: trip.v1.PreviewTripResponse.route:type_name -> trip.v1.Route
-	5, // 3: trip.v1.PreviewTripResponse.ride_fare:type_name -> trip.v1.RideFare
+	5, // 3: trip.v1.PreviewTripResponse.rideFares:type_name -> trip.v1.RideFare
 	3, // 4: trip.v1.Route.geometry:type_name -> trip.v1.Geometry
 	4, // 5: trip.v1.Geometry.coordinates:type_name -> trip.v1.Coordinate
 	0, // 6: trip.v1.TripService.PreviewTrip:input_type -> trip.v1.PreviewTripRequest
