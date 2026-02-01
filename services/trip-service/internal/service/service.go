@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"ride-sharing/services/trip-service/internal/domain"
+	tripv1 "ride-sharing/shared/proto/trip/v1"
 	"ride-sharing/shared/types"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -21,11 +22,13 @@ func NewTripService(repo domain.TripRepository) *TripService {
 }
 
 func (s *TripService) CreateTrip(ctx context.Context, fare *domain.RideFareModel) (*domain.TripModel, error) {
+	// TODO: add driver selection logic
 	newTrip := &domain.TripModel{
 		ID:            primitive.NewObjectID(),
-		UserID:        "",
-		Status:        "",
+		UserID:        fare.UserID,
+		Status:        "pending",
 		RideFareModel: fare,
+		Driver:        &tripv1.TripDriver{},
 	}
 
 	return s.repo.CreateTrip(ctx, newTrip)
@@ -85,6 +88,21 @@ func (t *TripService) GenerateTripFares(ctx context.Context, fares []*domain.Rid
 	}
 
 	return savedFares, nil
+}
+
+func (t *TripService) GetRideFareByID(ctx context.Context, fareId string, userId string) (*domain.RideFareModel, error) {
+	fareIdObj, err := primitive.ObjectIDFromHex(fareId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert fare id to object id: %v", err)
+	}
+	fare, err := t.repo.GetRideFareByID(ctx, fareIdObj)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get ride fare: %v", err)
+	}
+	if fare.UserID != userId {
+		return nil, fmt.Errorf("ride fare not found")
+	}
+	return fare, nil
 }
 
 func estimateFarePriceByRoute(fare *domain.RideFareModel, route *types.OsrmApiResponse) *domain.RideFareModel {

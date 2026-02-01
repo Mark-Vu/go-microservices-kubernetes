@@ -2,8 +2,11 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"ride-sharing/services/trip-service/internal/domain"
 	"sync"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type inmemRepository struct {
@@ -33,4 +36,15 @@ func (r *inmemRepository) SaveRideFare(ctx context.Context, fare *domain.RideFar
 
 	r.rideFares[fare.ID.Hex()] = fare
 	return nil
+}
+
+func (r *inmemRepository) GetRideFareByID(ctx context.Context, id primitive.ObjectID) (*domain.RideFareModel, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	fare, ok := r.rideFares[id.Hex()]
+	if !ok {
+		return nil, fmt.Errorf("ride fare not found")
+	}
+	return fare, nil
 }

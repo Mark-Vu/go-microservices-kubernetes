@@ -3,12 +3,14 @@ package domain
 import (
 	"context"
 	"ride-sharing/shared/types"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type TripRepository interface {
 	CreateTrip(ctx context.Context, trip *TripModel) (*TripModel, error)
 	SaveRideFare(ctx context.Context, fare *RideFareModel) error
-	GetRideFareByID(ctx context.Context, id string) (*RideFareModel, error)
+	GetRideFareByID(ctx context.Context, id primitive.ObjectID) (*RideFareModel, error)
 }
 
 type TripService interface {
