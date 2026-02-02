@@ -8,7 +8,7 @@ import (
 
 type TripModel struct {
 	ID            primitive.ObjectID
-	UserID        string // Customer ID
+	UserID        string
 	Status        string
 	RideFareModel *RideFareModel
 	Driver        *pb.TripDriver
