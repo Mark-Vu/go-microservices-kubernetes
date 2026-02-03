@@ -1,0 +1,10 @@
+# Copy this file to terraform.tfvars and fill in your values
+# 
+# cp terraform.tfvars.example terraform.tfvars
+#
+# terraform.tfvars is in .gitignore and will not be committed
+
+project_id                     = "your-gcp-project-id"
+region                         = "us-central1"
+artifact_registry_repository   = "ride-sharing"
+artifact_registry_description  = "Docker images for ride sharing microservices"
