@@ -1,0 +1,22 @@
+name: Build and Push API Gateway
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'services/api-gateway/**'
+      - 'shared/**'
+      - 'infra/production/docker/api-gateway.Dockerfile'
+      - '.github/workflows/api-gateway.yml'
+
+jobs:
+  build-and-push:
+    uses: ./.github/workflows/build-and-deploy.yml
+    with:
+      service_name: api-gateway
+      dockerfile_path: infra/production/docker/api-gateway.Dockerfile
+      manifest_path: infra/production/k8s/api-gateway-deployment.yaml
+      go_version: '1.21'
+    secrets:
+      gcp_sa_key: ${{ secrets.GCP_SA_KEY }}
+      gcp_project_id: ${{ secrets.GCP_PROJECT_ID }}

@@ -1,0 +1,23 @@
+name: Build and Push Trip Service
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'services/trip-service/**'
+      - 'shared/**'
+      - 'proto/**'
+      - 'infra/production/docker/trip-service.Dockerfile'
+      - '.github/workflows/trip-service.yml'
+
+jobs:
+  build-and-push:
+    uses: ./.github/workflows/build-and-deploy.yml
+    with:
+      service_name: trip-service
+      dockerfile_path: infra/production/docker/trip-service.Dockerfile
+      manifest_path: infra/production/k8s/trip-service-deployment.yaml
+      go_version: '1.21'
+    secrets:
+      gcp_sa_key: ${{ secrets.GCP_SA_KEY }}
+      gcp_project_id: ${{ secrets.GCP_PROJECT_ID }}

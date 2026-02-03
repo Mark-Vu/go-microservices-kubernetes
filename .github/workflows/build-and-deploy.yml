@@ -1,0 +1,104 @@
+name: Reusable Build and Push
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        description: 'Name of the service (e.g., api-gateway, trip-service)'
+        required: true
+        type: string
+      dockerfile_path:
+        description: 'Path to Dockerfile'
+        required: true
+        type: string
+      manifest_path:
+        description: 'Path to k8s deployment manifest'
+        required: true
+        type: string
+      go_version:
+        description: 'Go version to use'
+        required: false
+        type: string
+        default: '1.21'
+    secrets:
+      gcp_sa_key:
+        description: 'GCP Service Account Key JSON'
+        required: true
+      gcp_project_id:
+        description: 'GCP Project ID'
+        required: true
+
+env:
+  ARTIFACT_REGISTRY: us-docker.pkg.dev
+  GCP_REGION: us-central1
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go_version }}
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.gcp_sa_key }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ env.ARTIFACT_REGISTRY }}
+
+      - name: Build and Push Docker Image
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          FULL_IMAGE_NAME: ${{ env.ARTIFACT_REGISTRY }}/${{ secrets.gcp_project_id }}/ride-sharing/${{ inputs.service_name }}
+        run: |
+          docker build \
+            -f ${{ inputs.dockerfile_path }} \
+            -t $FULL_IMAGE_NAME:$IMAGE_TAG \
+            -t $FULL_IMAGE_NAME:latest \
+            .
+          
+          docker push $FULL_IMAGE_NAME:$IMAGE_TAG
+          docker push $FULL_IMAGE_NAME:latest
+          
+          echo "Pushed image: $FULL_IMAGE_NAME:$IMAGE_TAG"
+
+      - name: Update Kubernetes Manifest
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          FULL_IMAGE_NAME: ${{ env.ARTIFACT_REGISTRY }}/${{ secrets.gcp_project_id }}/ride-sharing/${{ inputs.service_name }}
+        run: |
+          sed -i "s|image:.*${{ inputs.service_name }}.*|image: $FULL_IMAGE_NAME:$IMAGE_TAG|g" \
+            ${{ inputs.manifest_path }}
+
+      - name: Commit and Push Manifest Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add ${{ inputs.manifest_path }}
+          
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update ${{ inputs.service_name }} image to ${{ github.sha }}"
+            git push
+          fi
+
+      - name: Summary
+        run: |
+          echo "Built and pushed ${{ inputs.service_name }}:${{ github.sha }}"
+          echo "Image: ${{ env.ARTIFACT_REGISTRY }}/${{ secrets.gcp_project_id }}/ride-sharing/${{ inputs.service_name }}:${{ github.sha }}"
+          echo "Updated manifest: ${{ inputs.manifest_path }}"
