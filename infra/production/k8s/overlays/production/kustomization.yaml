@@ -11,7 +11,7 @@ images:
   newTag: 2c3b3742995423467567ff98b169acd4f4d55c90
 - name: trip-service
   newName: us-west1-docker.pkg.dev/ride-sharing-486323/ride-sharing/trip-service
-  newTag: latest
+  newTag: 68680745de38b1df58ade180fb4ab203216c3bdb
 
 commonLabels:
   environment: production
