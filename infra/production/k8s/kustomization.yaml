@@ -5,18 +5,18 @@ namespace: default
 
 # Centralized configuration
 images:
-  - name: REGISTRY_URL/PROJECT_ID/ride-sharing/api-gateway
-    newName: us-west1-docker.pkg.dev/PROJECT_ID/ride-sharing/api-gateway
-    newTag: latest
-  - name: REGISTRY_URL/PROJECT_ID/ride-sharing/trip-service
-    newName: us-west1-docker.pkg.dev/PROJECT_ID/ride-sharing/trip-service
-    newTag: latest
+- name: REGISTRY_URL/PROJECT_ID/ride-sharing/api-gateway
+  newName: us-west1-docker.pkg.dev/ride-sharing-486323/ride-sharing/api-gateway
+  newTag: 344f463ec960dd33da996dc47a2775ada4574615
+- name: REGISTRY_URL/PROJECT_ID/ride-sharing/trip-service
+  newName: us-west1-docker.pkg.dev/PROJECT_ID/ride-sharing/trip-service
+  newTag: latest
 
 # Resources to deploy
 resources:
-  - api-gateway-deployment.yaml
-  - trip-service-deployment.yaml
-  - app-config.yaml
+- api-gateway-deployment.yaml
+- trip-service-deployment.yaml
+- app-config.yaml
 
 # Common labels
 commonLabels:
