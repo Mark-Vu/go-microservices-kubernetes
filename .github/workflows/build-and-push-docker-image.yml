@@ -32,7 +32,7 @@ on:
         required: true
 
 env:
-  ARTIFACT_REGISTRY: ${{ inputs.gcp_region }}-docker.pkg.dev
+  ARTIFACT_REGISTRY: ${{ secrets.gcp_region }}-docker.pkg.dev
 
 jobs:
   build-and-push:
