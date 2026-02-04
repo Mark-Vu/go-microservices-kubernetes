@@ -47,6 +47,9 @@ func main() {
 
 	mux := http.NewServeMux()
 
+	// Health check endpoint
+	mux.HandleFunc("GET /health", middleware.EnableCORS(handlers.HandleHealth))
+
 	// Trip endpoints
 	mux.HandleFunc("POST /trip/preview", middleware.EnableCORS(tripHandler.HandleTripPreview))
 	mux.HandleFunc("POST /trip/start", middleware.EnableCORS(tripHandler.HandleTripStart))

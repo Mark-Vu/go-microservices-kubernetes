@@ -1,0 +1,19 @@
+meta {
+  name: PROD-ws/drivers
+  type: ws
+  seq: 4
+}
+
+ws {
+  url: 36.109.153.118:8081/ws/drivers?userID=30fe8596-59d8-441e-be0b-4d053c463293&packageSlug=luxury
+  body: ws
+  auth: inherit
+}
+
+body:ws {
+  name: message 1
+  type: json
+  content: '''
+    {}
+  '''
+}
