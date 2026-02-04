@@ -11,7 +11,7 @@
 # ============================================================================
 
 terraform {
-  required_version = ">= 1.14.4"
+  required_version = ">= 1.5.7"
   
   required_providers {
     google = {
