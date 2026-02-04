@@ -2,7 +2,7 @@
 # Bucket name is configured via -backend-config or environment variable
 terraform {
   backend "gcs" {
-    # bucket = "" is configured via CI workflow
+    # bucket = "" is configured via CI/CD workflow
     prefix = "artifact-registry"
   }
 }
