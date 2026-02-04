@@ -7,7 +7,7 @@ namespace: default
 images:
 - name: REGISTRY_URL/PROJECT_ID/ride-sharing/api-gateway
   newName: us-west1-docker.pkg.dev/ride-sharing-486323/ride-sharing/api-gateway
-  newTag: 344f463ec960dd33da996dc47a2775ada4574615
+  newTag: a820331a73e9f7f636680af828e598ee755f4778
 - name: REGISTRY_URL/PROJECT_ID/ride-sharing/trip-service
   newName: us-west1-docker.pkg.dev/PROJECT_ID/ride-sharing/trip-service
   newTag: latest
