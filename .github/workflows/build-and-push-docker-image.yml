@@ -29,8 +29,7 @@ on:
         required: true
 
 env:
-  GCP_REGION: secrets.GCP_REGION
-  ARTIFACT_REGISTRY: ${GCP_REGION}-docker.pkg.dev
+  ARTIFACT_REGISTRY: ${{ secrets.GCP_REGION }}-docker.pkg.dev
 
 jobs:
   build-and-push:
