@@ -13,6 +13,8 @@ on:
 
 jobs:
   build-and-push:
+    permissions:
+      contents: write
     uses: ./.github/workflows/build-and-push-docker-image.yml
     with:
       service_name: trip-service

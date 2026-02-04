@@ -33,8 +33,6 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write  # Required to commit kustomization changes
     
     steps:
       - name: Checkout code
