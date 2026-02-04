@@ -33,6 +33,8 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to commit kustomization changes
     
     steps:
       - name: Checkout code
@@ -44,6 +46,11 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ inputs.go_version }}
+
+      - name: Install Kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
@@ -73,8 +80,35 @@ jobs:
           
           echo "Pushed image: $FULL_IMAGE_NAME:$IMAGE_TAG"
 
+      - name: Update Image tag in Kustomization
+        working-directory: infra/production/k8s
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          FULL_IMAGE_NAME: ${{ env.ARTIFACT_REGISTRY }}/${{ secrets.gcp_project_id }}/ride-sharing/${{ inputs.service_name }}
+        run: |
+          # Update image tag in kustomization.yaml
+          kustomize edit set image \
+            REGISTRY_URL/PROJECT_ID/ride-sharing/${{ inputs.service_name }}=$FULL_IMAGE_NAME:$IMAGE_TAG
+          
+          echo "Updated kustomization.yaml with new image tag"
+
+      - name: Commit and Push latest tag in Kustomization
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add infra/production/k8s/kustomization.yaml
+          
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "deploy: update ${{ inputs.service_name }} to ${{ github.sha }}"
+            git push
+          fi
+
       - name: Summary
         run: |
           echo "Successfully built and pushed ${{ inputs.service_name }}"
           echo "Image: ${{ env.ARTIFACT_REGISTRY }}/${{ secrets.gcp_project_id }}/ride-sharing/${{ inputs.service_name }}:${{ github.sha }}"
           echo "Tag: ${{ github.sha }}"
+          echo "Updated kustomization.yaml - ArgoCD will sync"
