@@ -1,6 +1,7 @@
 name: Build and Push Trip Service
 
 on:
+  workflow_dispatch:  # Manual trigger
   push:
     branches: [main]
     paths:
