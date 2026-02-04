@@ -1,4 +1,4 @@
-name: Build and Push Trip Service
+name: Build and Push Trip Service Docker Image
 
 on:
   workflow_dispatch:  # Manual trigger
@@ -17,7 +17,6 @@ jobs:
     with:
       service_name: trip-service
       dockerfile_path: infra/production/docker/trip-service.Dockerfile
-      manifest_path: infra/production/k8s/trip-service-deployment.yaml
       go_version: '1.21'
     secrets:
       gcp_sa_key: ${{ secrets.GCP_SA_KEY }}

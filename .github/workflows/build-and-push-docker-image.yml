@@ -11,10 +11,6 @@ on:
         description: 'Path to Dockerfile'
         required: true
         type: string
-      manifest_path:
-        description: 'Path to k8s deployment manifest'
-        required: true
-        type: string
       go_version:
         description: 'Go version to use'
         required: false
@@ -77,30 +73,8 @@ jobs:
           
           echo "Pushed image: $FULL_IMAGE_NAME:$IMAGE_TAG"
 
-      - name: Update Kubernetes Manifest
-        env:
-          IMAGE_TAG: ${{ github.sha }}
-          FULL_IMAGE_NAME: ${{ env.ARTIFACT_REGISTRY }}/${{ secrets.gcp_project_id }}/ride-sharing/${{ inputs.service_name }}
-        run: |
-          sed -i "s|image:.*${{ inputs.service_name }}.*|image: $FULL_IMAGE_NAME:$IMAGE_TAG|g" \
-            ${{ inputs.manifest_path }}
-
-      - name: Commit and Push Manifest Changes
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
-          git add ${{ inputs.manifest_path }}
-          
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "Update ${{ inputs.service_name }} image to ${{ github.sha }}"
-            git push
-          fi
-
       - name: Summary
         run: |
-          echo "Built and pushed ${{ inputs.service_name }}:${{ github.sha }}"
+          echo "Successfully built and pushed ${{ inputs.service_name }}"
           echo "Image: ${{ env.ARTIFACT_REGISTRY }}/${{ secrets.gcp_project_id }}/ride-sharing/${{ inputs.service_name }}:${{ github.sha }}"
-          echo "Updated manifest: ${{ inputs.manifest_path }}"
+          echo "Tag: ${{ github.sha }}"

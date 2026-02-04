@@ -1,4 +1,4 @@
-name: Build and Push API Gateway
+name: Build and Push API Gateway Docker Image
 
 on:
   workflow_dispatch:  # Manual trigger
@@ -16,7 +16,6 @@ jobs:
     with:
       service_name: api-gateway
       dockerfile_path: infra/production/docker/api-gateway.Dockerfile
-      manifest_path: infra/production/k8s/api-gateway-deployment.yaml
       go_version: '1.21'
     secrets:
       gcp_sa_key: ${{ secrets.GCP_SA_KEY }}
