@@ -9,16 +9,8 @@ module "artifact_registry" {
   immutable_tags = false  
 }
 
-# IAM Module - Service Account for GitHub Actions
-module "iam" {
-  source = "./modules/iam"
-
-  project_id          = var.project_id
-  service_account_id  = "github-actions-deployer"
-  display_name        = "GitHub Actions Deployer"
-  description         = "Service account for GitHub Actions CI/CD pipeline"
-  repository_location = module.artifact_registry.repository_location
-  repository_name     = module.artifact_registry.repository_name
-
-  depends_on = [module.artifact_registry]
-}
+# Note: Service account (ci-cd-admin) is created manually
+# It has Editor role which includes:
+# - Artifact Registry writer (push images)
+# - IAM admin (run Terraform)
+# - Storage admin (access state bucket)
