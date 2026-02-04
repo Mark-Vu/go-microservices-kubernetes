@@ -9,8 +9,8 @@ images:
   newName: us-west1-docker.pkg.dev/ride-sharing-486323/ride-sharing/api-gateway
   newTag: a820331a73e9f7f636680af828e598ee755f4778
 - name: REGISTRY_URL/PROJECT_ID/ride-sharing/trip-service
-  newName: us-west1-docker.pkg.dev/PROJECT_ID/ride-sharing/trip-service
-  newTag: latest
+  newName: us-west1-docker.pkg.dev/ride-sharing-486323/ride-sharing/trip-service
+  newTag: f491222a1536f09ac6d53eefe1cc2f0c0d2113a2
 
 # Resources to deploy
 resources:
