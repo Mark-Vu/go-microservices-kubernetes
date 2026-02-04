@@ -27,3 +27,19 @@ output "service_account_note" {
   description = "Service account information"
   value       = "Service account ci-cd-admin@${var.project_id}.iam.gserviceaccount.com is created manually and used for all CI/CD operations"
 }
+
+# GKE Outputs
+output "gke_cluster_name" {
+  description = "GKE cluster name"
+  value       = module.gke.cluster_name
+}
+
+output "gke_cluster_location" {
+  description = "GKE cluster location"
+  value       = module.gke.cluster_location
+}
+
+output "kubeconfig_command" {
+  description = "Command to configure kubectl access"
+  value       = module.gke.kubeconfig_command
+}

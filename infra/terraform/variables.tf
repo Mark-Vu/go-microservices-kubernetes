@@ -20,3 +20,16 @@ variable "artifact_registry_description" {
   type        = string
   default     = "Docker images for ride sharing microservices"
 }
+
+# GKE Variables
+variable "gke_cluster_name" {
+  description = "Name of the GKE cluster"
+  type        = string
+  default     = "ride-sharing"
+}
+
+variable "gke_region" {
+  description = "GCP zone for GKE cluster"
+  type        = string
+  default     = "us-west1"
+}

@@ -8,3 +8,7 @@ project_id                     = "your-gcp-project-id"
 region                         = "us-central1"
 artifact_registry_repository   = "ride-sharing"
 artifact_registry_description  = "Docker images for ride sharing microservices"
+
+# GKE Configuration
+gke_cluster_name               = "ride-sharing"
+gke_zone                       = "us-west1"
