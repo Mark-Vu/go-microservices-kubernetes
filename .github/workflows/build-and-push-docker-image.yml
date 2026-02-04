@@ -27,9 +27,12 @@ on:
       gcp_project_id:
         description: 'GCP Project ID'
         required: true
+      gcp_region:
+        description: 'GCP Region'
+        required: true
 
 env:
-  ARTIFACT_REGISTRY: ${{ secrets.GCP_REGION }}-docker.pkg.dev
+  ARTIFACT_REGISTRY: ${{ inputs.gcp_region }}-docker.pkg.dev
 
 jobs:
   build-and-push:

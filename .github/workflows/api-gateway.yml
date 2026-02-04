@@ -21,3 +21,4 @@ jobs:
     secrets:
       gcp_sa_key: ${{ secrets.GCP_SA_KEY }}
       gcp_project_id: ${{ secrets.GCP_PROJECT_ID }}
+      gcp_region: ${{ secrets.GCP_REGION }}
