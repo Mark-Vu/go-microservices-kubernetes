@@ -12,7 +12,7 @@ on:
 
 jobs:
   build-and-push:
-    uses: ./.github/workflows/build-and-deploy.yml
+    uses: ./.github/workflows/build-and-push-docker-image.yml
     with:
       service_name: api-gateway
       dockerfile_path: infra/production/docker/api-gateway.Dockerfile
