@@ -1,12 +1,34 @@
 # Terraform - Artifact Registry
 
-Creates Google Cloud Artifact Registry for Docker images and service account for GitHub Actions.
+Creates Google Cloud Artifact Registry for Docker images.
+
+## Prerequisites
+
+Create service account manually (one-time):
+
+```bash
+# Create service account
+gcloud iam service-accounts create ci-cd-admin \
+  --display-name="CI/CD Admin"
+
+# Grant permissions
+PROJECT_ID=$(gcloud config get-value project)
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member="serviceAccount:ci-cd-admin@${PROJECT_ID}.iam.gserviceaccount.com" \
+  --role="roles/editor"
+
+# Create key
+gcloud iam service-accounts keys create ci-cd-key.json \
+  --iam-account=ci-cd-admin@${PROJECT_ID}.iam.gserviceaccount.com
+
+# Add key contents to GitHub Secrets as GCP_SA_KEY
+```
 
 ## What This Creates
 
 - Artifact Registry repository: `ride-sharing`
-- Service account: `github-actions-deployer@PROJECT.iam.gserviceaccount.com`
-- IAM permissions: Artifact Registry writer + project viewer
+
+Note: Service account `ci-cd-admin` is created manually (see Prerequisites)
 
 ## Quick Start
 
@@ -22,7 +44,6 @@ gcloud auth application-default login
 # 3. Run
 terraform init
 terraform apply
-# Type 'yes' when prompted
 ```
 
 ## What Happens
@@ -31,10 +52,6 @@ terraform apply
 terraform apply
   ↓
 Creates Artifact Registry in us-west1
-  ↓
-Creates service account for GitHub Actions
-  ↓
-Grants permissions to push Docker images
   ↓
 Outputs registry URL
 ```
@@ -48,26 +65,18 @@ terraform output artifact_registry_url
 # Example: us-west1-docker.pkg.dev/your-project/ride-sharing
 ```
 
-### Create Service Account Key
-
-```bash
-SA_EMAIL=$(terraform output -raw github_actions_service_account_email)
-gcloud iam service-accounts keys create key.json --iam-account=$SA_EMAIL
-```
-
 ### Add to GitHub Secrets
 
 Repository → Settings → Secrets → Actions:
 
-- `GCP_SA_KEY`: Contents of `key.json`
+- `GCP_SA_KEY`: Contents of `ci-cd-key.json` from Prerequisites
 - `GCP_PROJECT_ID`: Your GCP project ID
 
 ## Module Structure
 
 ```
-main.tf                      Calls modules
-├─ modules/artifact-registry Creates registry
-└─ modules/iam              Creates service account
+main.tf
+└─ modules/artifact-registry    Creates registry
 ```
 
 ## Common Commands
