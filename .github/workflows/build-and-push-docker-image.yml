@@ -90,30 +90,32 @@ jobs:
           
           echo "Updated kustomization.yaml with new image tag"
 
-          - name: Commit and Push latest tag in Kustomization
-          run: |
-            set -e
-  
-            git config --global user.name "github-actions[bot]"
-            git config --global user.email "github-actions[bot]@users.noreply.github.com"
-  
-            git fetch origin main
-            git rebase origin/main
-  
-            git add infra/production/k8s/kustomization.yaml
-  
-            if git diff --staged --quiet; then
-              echo "No changes to commit"
-              exit 0
-            fi
-  
-            git commit -m "deploy: update ${{ inputs.service_name }} to ${{ github.sha }}"
-  
-            git fetch origin main
-            git rebase origin/main
-  
-            git push origin HEAD:main
+      - name: Commit and Push latest tag in Kustomization
+        run: |
+          set -e
           
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Fetch and rebase before staging changes
+          git fetch origin main
+          git rebase origin/main
+          
+          git add infra/production/k8s/kustomization.yaml
+          
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          
+          git commit -m "deploy: update ${{ inputs.service_name }} to ${{ github.sha }}"
+          
+          # Fetch and rebase again in case new commits were pushed
+          git fetch origin main
+          git rebase origin/main
+          
+          # Push explicitly to main
+          git push origin HEAD:main
 
       - name: Summary
         run: |
