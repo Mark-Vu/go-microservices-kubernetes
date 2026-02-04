@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: trip-service
-          image: REGISTRY_URL/PROJECT_ID/ride-sharing/trip-service
+          image: trip-service
           ports:
             - containerPort: 8083
           resources:

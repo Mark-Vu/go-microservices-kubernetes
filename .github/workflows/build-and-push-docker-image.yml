@@ -31,7 +31,7 @@ env:
   ARTIFACT_REGISTRY: ${{ secrets.gcp_region }}-docker.pkg.dev
 
 concurrency:
-  group: deploy-kustomize-main
+  group: deploy-production-overlay
   cancel-in-progress: false
 
 jobs:
@@ -87,16 +87,16 @@ jobs:
           echo "Pushed image: $FULL_IMAGE_NAME:$IMAGE_TAG"
 
       - name: Update Image tag in Kustomization
-        working-directory: infra/production/k8s
+        working-directory: infra/production/k8s/overlays/production
         env:
           IMAGE_TAG: ${{ github.sha }}
           FULL_IMAGE_NAME: ${{ env.ARTIFACT_REGISTRY }}/${{ secrets.gcp_project_id }}/ride-sharing/${{ inputs.service_name }}
         run: |
-          # Update image tag in kustomization.yaml
+          # Update image tag in overlay kustomization.yaml
           kustomize edit set image \
-            REGISTRY_URL/PROJECT_ID/ride-sharing/${{ inputs.service_name }}=$FULL_IMAGE_NAME:$IMAGE_TAG
-          
-          echo "Updated kustomization.yaml with new image tag"
+            ${{ inputs.service_name }}=$FULL_IMAGE_NAME:$IMAGE_TAG
+
+          echo "Updated overlay kustomization.yaml with new image tag"
 
       - name: Commit and Push latest tag in Kustomization
         run: |
@@ -105,7 +105,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          git add infra/production/k8s/kustomization.yaml
+          git add infra/production/k8s/overlays/production/kustomization.yaml
           
           if git diff --staged --quiet; then
             echo "No changes to commit"
