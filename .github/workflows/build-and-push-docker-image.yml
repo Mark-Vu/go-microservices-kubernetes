@@ -32,6 +32,8 @@ env:
 
 jobs:
   build-and-push:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     
     steps:
