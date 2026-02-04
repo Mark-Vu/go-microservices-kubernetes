@@ -3,18 +3,18 @@ kind: Kustomization
 
 namespace: default
 
-bases:
-  - ../../base
 
 # Image mappings (CI will update these)
 images:
-  - name: api-gateway
-    newName: us-west1-docker.pkg.dev/PROJECT_ID/ride-sharing/api-gateway
-    newTag: latest
-  - name: trip-service
-    newName: us-west1-docker.pkg.dev/PROJECT_ID/ride-sharing/trip-service
-    newTag: latest
+- name: api-gateway
+  newName: us-west1-docker.pkg.dev/ride-sharing-486323/ride-sharing/api-gateway
+  newTag: 2c3b3742995423467567ff98b169acd4f4d55c90
+- name: trip-service
+  newName: us-west1-docker.pkg.dev/PROJECT_ID/ride-sharing/trip-service
+  newTag: latest
 
 commonLabels:
   environment: production
   managed-by: argocd
+resources:
+- ../../base
