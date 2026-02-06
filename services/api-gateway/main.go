@@ -35,17 +35,30 @@ func main() {
 			return grpc_clients.NewTripServiceClient()
 		},
 	)
-
 	if err != nil {
 		log.Fatalf("Failed to initialize trip-service client: %v", err)
 	}
 	defer tripClient.Close()
 
-	log.Println("Trip service gRPC client initialized successfully")
+	driverClient, err := InitgRPCServiceWithRetry(
+		ctx,
+		"driver-service",
+		2*time.Second,
+		func(ctx context.Context) (*grpc_clients.DriverServiceClient, error) {
+			return grpc_clients.NewDriverServiceClient()
+		},
+	)
+
+	if err != nil {
+		log.Fatalf("Failed to initialize driver-service client: %v", err)
+	}
+	defer driverClient.Close()
+
+	log.Println("Trip service and driver service gRPC clients initialized successfully")
 
 	// Create handlers with dependencies
 	tripHandler := handlers.NewTripHandler(tripClient)
-
+	handlers.NewDriverHandler(driverClient)
 	mux := http.NewServeMux()
 
 	// Health check endpoint

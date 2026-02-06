@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log"
 	"ride-sharing/services/driver-service/internal/domain"
 	"ride-sharing/services/driver-service/internal/fixtures"
 	pb "ride-sharing/shared/proto/driver/v1"
@@ -45,5 +46,6 @@ func (s *DriverService) RegisterDriver(ctx context.Context, driverID, packageSlu
 	if err != nil {
 		return nil, fmt.Errorf("failed to create driver: %v", err)
 	}
+	log.Printf("Driver created: %v", createdDriver)
 	return createdDriver, nil
 }

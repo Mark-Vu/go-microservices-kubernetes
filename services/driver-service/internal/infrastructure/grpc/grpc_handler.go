@@ -24,9 +24,27 @@ func NewGRPCHandler(server *grpc.Server, service domain.DriverService) *gRPCHand
 	return handler
 }
 
-func (h *gRPCHandler) RegisterDriver(context.Context, *pb.RegisterDriverRequest) (*pb.RegisterDriverResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method RegisterDriver not implemented")
+func (h *gRPCHandler) RegisterDriver(ctx context.Context, req *pb.RegisterDriverRequest) (*pb.RegisterDriverResponse, error) {
+	if req.DriverID == "" {
+		return nil, status.Error(codes.InvalidArgument, "driverID is required")
+	}
+	if req.PackageSlug == "" {
+		return nil, status.Error(codes.InvalidArgument, "packageSlug is required")
+	}
+
+	// Call the service layer
+	driver, err := h.service.RegisterDriver(ctx, req.DriverID, req.PackageSlug)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to register driver: %v", err)
+	}
+
+	// Convert domain model to proto response
+	return &pb.RegisterDriverResponse{
+		Driver: ToProtoDriver(driver),
+	}, nil
 }
-func (h *gRPCHandler) UnregisterDriver(context.Context, *pb.RegisterDriverRequest) (*pb.RegisterDriverResponse, error) {
+
+func (h *gRPCHandler) UnregisterDriver(ctx context.Context, req *pb.RegisterDriverRequest) (*pb.RegisterDriverResponse, error) {
+	// TODO: Implement unregister logic
 	return nil, status.Error(codes.Unimplemented, "method UnregisterDriver not implemented")
 }
