@@ -1,13 +1,14 @@
 package handlers
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"strings"
 
-	"ride-sharing/services/api-gateway/dto"
+	"ride-sharing/services/api-gateway/grpc_clients"
 	"ride-sharing/shared/contracts"
-	"ride-sharing/shared/util"
+	driverv1 "ride-sharing/shared/proto/driver/v1"
 
 	"github.com/gorilla/websocket"
 )
@@ -73,16 +74,26 @@ func HandleDriversWebsocket(w http.ResponseWriter, r *http.Request) {
 		log.Println("No package slug provided")
 		return
 	}
+	driverServiceClient, err := grpc_clients.NewDriverServiceClient()
+	if err != nil {
+		log.Printf("Error creating driver service client: %v", err)
+		return
+	}
+	defer driverServiceClient.Close()
+
+	driver, err := driverServiceClient.Client.RegisterDriver(context.Background(), &driverv1.RegisterDriverRequest{
+		DriverID:    userID,
+		PackageSlug: packageSlug,
+	})
+
+	if err != nil {
+		log.Printf("Error registering driver: %v", err)
+		return
+	}
 
 	msg := contracts.WSMessage{
 		Type: "driver.cmd.register",
-		Data: dto.Driver{
-			Id:             userID,
-			Name:           "Tiago",
-			ProfilePicture: util.GetRandomAvatar(1),
-			CarPlate:       "ABC123",
-			PackageSlug:    packageSlug,
-		},
+		Data: driver.Driver,
 	}
 
 	if err := conn.WriteJSON(msg); err != nil {

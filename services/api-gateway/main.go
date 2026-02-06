@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"ride-sharing/services/api-gateway/grpc_clients"
 	grpcclients "ride-sharing/services/api-gateway/grpc_clients"
 	"ride-sharing/services/api-gateway/handlers"
 	"ride-sharing/services/api-gateway/middleware"
@@ -31,7 +32,7 @@ func main() {
 		"trip-service",
 		2*time.Second,
 		func(ctx context.Context) (*grpcclients.TripServiceClient, error) {
-			return grpcclients.NewTripServiceClient()
+			return grpc_clients.NewTripServiceClient()
 		},
 	)
 
