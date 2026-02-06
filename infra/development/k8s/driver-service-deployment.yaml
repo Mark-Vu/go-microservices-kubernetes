@@ -16,7 +16,7 @@ spec:
         - name: driver-service
           image: ride-sharing/driver-service
           ports:
-            - containerPort: 8082 # driver-service app itself will use this port to listen for incoming requests
+            - containerPort: 8083 # driver-service app itself will use this port to listen for incoming requests
           resources:
             requests:
               memory: "64Mi"
@@ -33,7 +33,7 @@ spec:
   selector:
     app: driver-service
   ports:
-    - port: 8082 # API Gateway will use this port to connect to the driver-service
+    - port: 8083 # API Gateway will use this port to connect to the driver-service
       name: grpc
-      targetPort: 8082 # Kube Service forwards traffic to this port on the driver-service pod
+      targetPort: 8083 # Kube Service forwards traffic to this port on the driver-service pod
   type: ClusterIP

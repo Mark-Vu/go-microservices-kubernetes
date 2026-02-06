@@ -14,9 +14,9 @@ spec:
     spec:
       containers:
         - name: trip-service
-          image: ride-sharing/trip-service
+          image: trip-service
           ports:
-            - containerPort: 8082 # Trip service app itself will use this port to listen for incoming requests
+            - containerPort: 8083
           resources:
             requests:
               memory: "64Mi"
@@ -24,6 +24,7 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "200m"
+
 ---
 apiVersion: v1
 kind: Service
@@ -33,7 +34,7 @@ spec:
   selector:
     app: trip-service
   ports:
-    - port: 8082 # API Gateway will use this port to connect to the trip service
-      name: grpc
-      targetPort: 8082 # Kube Service forwards traffic to this port on the trip-service pod
+    - port: 8083
+      name: http
+      targetPort: 8083
   type: ClusterIP

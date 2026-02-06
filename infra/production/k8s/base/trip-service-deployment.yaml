@@ -16,7 +16,7 @@ spec:
         - name: trip-service
           image: trip-service
           ports:
-            - containerPort: 8083
+            - containerPort: 8082
           resources:
             requests:
               memory: "64Mi"
@@ -34,7 +34,7 @@ spec:
   selector:
     app: trip-service
   ports:
-    - port: 8083
+    - port: 8082
       name: http
-      targetPort: 8083
+      targetPort: 8082
   type: ClusterIP

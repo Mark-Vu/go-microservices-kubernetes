@@ -5,3 +5,5 @@ metadata:
 data:
   ENVIRONMENT: "production"
   GATEWAY_HTTP_ADDR: ":8081"
+  DRIVER_SERVICE_HTTP_ADDR: ":8083"
+  TRIP_SERVICE_HTTP_ADDR: ":8082"
