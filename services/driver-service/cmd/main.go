@@ -6,6 +6,9 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	g "ride-sharing/services/driver-service/internal/infrastructure/grpc"
+	"ride-sharing/services/driver-service/internal/infrastructure/repository"
+	"ride-sharing/services/driver-service/internal/service"
 	"ride-sharing/shared/env"
 	"syscall"
 	"time"
@@ -24,6 +27,9 @@ func main() {
 	}
 	// Starting grpc server
 	grpcServer := grpc.NewServer()
+	inmemRepo := repository.NewInmemRepository()
+	driverService := service.NewDriverService(inmemRepo)
+	g.NewGRPCHandler(grpcServer, driverService)
 
 	log.Printf("Starting gRPC trip-service on port %s", lis.Addr().String())
 	serverError := make(chan error, 1)

@@ -7,9 +7,14 @@ import (
 )
 
 type DriverModel struct {
-	ID          primitive.ObjectID
-	DriverID    string
-	PackageSlug string
+	ID             primitive.ObjectID
+	DriverID       string
+	PackageSlug    string
+	Geohash        string
+	Location       *pb.Location
+	Name           string
+	ProfilePicture string
+	CarPlate       string
 }
 
 type driverInMap struct {

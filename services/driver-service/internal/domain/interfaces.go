@@ -9,5 +9,5 @@ type DriverRepository interface {
 }
 
 type DriverService interface {
-	RegisterDriver(ctx context.Context, driver *DriverModel) (*DriverModel, error)
+	RegisterDriver(ctx context.Context, driverID, packageSlug string) (*DriverModel, error)
 }
