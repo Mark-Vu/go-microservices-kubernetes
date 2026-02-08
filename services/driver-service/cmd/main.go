@@ -10,6 +10,7 @@ import (
 	"ride-sharing/services/driver-service/internal/infrastructure/repository"
 	"ride-sharing/services/driver-service/internal/service"
 	"ride-sharing/shared/env"
+	"ride-sharing/shared/messaging"
 	"syscall"
 	"time"
 
@@ -17,10 +18,12 @@ import (
 )
 
 var (
-	httpAddr = env.GetString("HTTP_ADDR", ":8083")
+	httpAddr    = env.GetString("HTTP_ADDR", ":8083")
+	rabbitmqURI = env.GetString("RABBITMQ_URI", "amqp://guest:guest@localhost:5672")
 )
 
 func main() {
+	// Start listening for incoming gRPC requests
 	lis, err := net.Listen("tcp", httpAddr)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -30,8 +33,16 @@ func main() {
 	inmemRepo := repository.NewInmemRepository()
 	driverService := service.NewDriverService(inmemRepo)
 	g.NewGRPCHandler(grpcServer, driverService)
-
 	log.Printf("Starting gRPC trip-service on port %s", lis.Addr().String())
+
+	// Create RabbitMQ client
+	rabbitmq, err := messaging.NewRabbitMQ(rabbitmqURI)
+	if err != nil {
+		log.Fatalf("failed to create RabbitMQ client: %v", err)
+	}
+	defer rabbitmq.Close()
+	log.Printf("RabbitMQ client created successfully")
+
 	serverError := make(chan error, 1)
 	go func() {
 		if err := grpcServer.Serve(lis); err != nil {
