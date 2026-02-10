@@ -56,8 +56,9 @@ func (r *RabbitMQ) Publish(ctx context.Context, routingKey string, body []byte) 
 		false,      // mandatory
 		false,      // immediate
 		amqp091.Publishing{
-			ContentType: "application/json",
-			Body:        body,
+			ContentType:  "application/json",
+			Body:         body,
+			DeliveryMode: amqp091.Persistent,
 		},
 	)
 }
