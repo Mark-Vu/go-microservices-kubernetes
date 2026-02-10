@@ -25,48 +25,6 @@ services/trip-service/
 │       └── grpc/            # gRPC implementations
 ```
 
-### Dependency Flow
-
-**Step 1: Create Repository**
-```go
-// main.go
-inmemRepo := repository.NewInmemRepository()
-// Creates concrete implementation (inmem, postgres, mongo, etc.)
-```
-
-**Step 2: Inject Repository into Service**
-```go
-// main.go
-service := service.NewTripService(inmemRepo)
-// Service receives repo, uses it to call CreateTrip() later
-```
-
-**Step 3: Inject Service into Handler**
-```go
-// main.go
-httpHandler := http.HttpHandler{Service: service}
-// Handler receives service, calls service.CreateTrip() on requests
-```
-
-**Step 4: HTTP Request Flow (Runtime)**
-```go
-// Client → Handler
-POST /preview → httpHandler.HandleTripPreview()
-
-// Handler → Service
-trip, err := s.Service.CreateTrip(ctx, fare)
-
-// Service → Repository Interface
-return s.repo.CreateTrip(ctx, newTrip)
-
-// Repository Implementation (swappable)
-// Option A: In-Memory (current)
-r.trips[trip.ID.Hex()] = trip
-
-// Option B: Database (postgres, mongo, etc.)
-// db.Insert("trips", newTrip)
-```
-
 ### Why Clean Architecture?
 - **Testable**: Mock any layer easily
 - **Maintainable**: Clear separation of concerns
@@ -75,7 +33,7 @@ r.trips[trip.ID.Hex()] = trip
 
 ### Implementation Pattern
 1. **Domain layer** defines interfaces (what we need)
-2. **Infrastructure layer** implements interfaces (how we do it)
+2. **Infrastructure layer** implements interfaces and external dependencies (how we do it)
 3. **Service layer** orchestrates business logic
 4. **Main** wires everything together via dependency injection
 
@@ -199,7 +157,7 @@ or
 minikube dashboard
 ```
 
-## Deployment (Google Cloud example)
+## Deployment (Google Cloud)
 It's advisable to first run the steps manually and then build a proper CI/CD flow according to your infrastructure.
 
 ## 0. Environments
