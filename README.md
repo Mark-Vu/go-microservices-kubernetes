@@ -2,9 +2,9 @@
 
 A backend microservices system for a Uber-style ride-sharing app built with Go, Docker, and Kubernetes.
 
-## Project Overview
+## What This Is
 
-A fully deployed, horizontally scalable ride-sharing system with clean architecture principles, designed for real traffic and production use.
+Event-driven microservices for ride-sharing (trips, drivers, payments). Deployed to GKE with automated CI/CD pipeline.
 
 ## Clean Architecture
 
@@ -24,74 +24,18 @@ services/trip-service/
 │       ├── repository/      # Database implementations
 │       └── grpc/            # gRPC implementations
 ```
-
-### Dependency Flow
-
-**Step 1: Create Repository**
-```go
-// main.go
-inmemRepo := repository.NewInmemRepository()
-// Creates concrete implementation (inmem, postgres, mongo, etc.)
-```
-
-**Step 2: Inject Repository into Service**
-```go
-// main.go
-service := service.NewTripService(inmemRepo)
-// Service receives repo, uses it to call CreateTrip() later
-```
-
-**Step 3: Inject Service into Handler**
-```go
-// main.go
-httpHandler := http.HttpHandler{Service: service}
-// Handler receives service, calls service.CreateTrip() on requests
-```
-
-**Step 4: HTTP Request Flow (Runtime)**
-```go
-// Client → Handler
-POST /preview → httpHandler.HandleTripPreview()
-
-// Handler → Service
-trip, err := s.Service.CreateTrip(ctx, fare)
-
-// Service → Repository Interface
-return s.repo.CreateTrip(ctx, newTrip)
-
-// Repository Implementation (swappable)
-// Option A: In-Memory (current)
-r.trips[trip.ID.Hex()] = trip
-
-// Option B: Database (postgres, mongo, etc.)
-// db.Insert("trips", newTrip)
-```
-
 ### Why Clean Architecture?
 - **Testable**: Mock any layer easily
 - **Maintainable**: Clear separation of concerns
 - **Flexible**: Swap DB/HTTP without touching business logic
 - **Scalable**: Add new features without breaking existing code
 
-### Implementation Pattern
-1. **Domain layer** defines interfaces (what we need)
-2. **Infrastructure layer** implements interfaces (how we do it)
-3. **Service layer** orchestrates business logic
-4. **Main** wires everything together via dependency injection
-
-```go
-// main.go example:
-repo := repository.NewInmemRepository()        // Create repo
-service := service.NewTripService(repo)        // Inject repo into service
-handler := http.HttpHandler{Service: service}  // Inject service into handler
-```
-
 ## Technical Choices
 
 ### Backend
-- **Go 1.23+**: High performance, native concurrency, minimal dependencies
-- **Clean Architecture**: Separation of concerns, testable, swappable components
-- **Graceful Shutdown**: Ensures in-flight requests complete before termination
+- **Go 1.23+**: Native concurrency (goroutines), fast compilation
+- **Clean Architecture**: Domain/Service/Infrastructure layers, testable
+- **Graceful Shutdown**: Handles SIGTERM, waits for in-flight requests/messages
 
 ### Infrastructure
 - **Tilt**: Local development with live reload and auto Kubernetes deployment
@@ -99,9 +43,9 @@ handler := http.HttpHandler{Service: service}  // Inject service into handler
 - **Docker**: Consistent containerized environments across all stages
 
 ### Communication
-- **HTTP/REST**: Standard JSON APIs for service-to-service communication
+- **gRPC**: High-performance RPC between services
 - **WebSockets**: Real-time updates for driver locations and trip status
-- **RabbitMQ**: Async message queue for event-driven communication (planned)
+- **RabbitMQ**: Event-driven async messaging with topic exchanges and fair dispatch
 
 ### Observability
 - **Jaeger**: Distributed tracing across microservices
@@ -109,236 +53,154 @@ handler := http.HttpHandler{Service: service}  // Inject service into handler
 - **Health Checks**: Kubernetes liveness and readiness probes
 
 ### Cloud & Deployment
-- **GCP (GKE)**: Managed Kubernetes with auto-scaling
-- **Artifact Registry**: Docker image hosting
-- **Google-managed SSL**: Automatic certificate provisioning
+- **Terraform**: Infrastructure as code (GKE + Artifact Registry)
+- **GitHub Actions**: Automated CI/CD on every push
+- **ArgoCD**: GitOps - cluster syncs with Git automatically
+- **GKE Autopilot**: Managed Kubernetes, auto-scales nodes
 
 ## Trip Scheduling Flow
 [![](https://mermaid.ink/img/pako:eNqNVt9v2jAQ_lcsP21qGvGjZSEPlSpaTX1YxWDVpAmpMvZBIkicOQ6UVf3fd4mdEgcKzQOK47v7vjt_d-aVcimAhnSW5vC3gJTDXcyWiiWzlOCTMaVjHmcs1eQpB3X49Xb88J1p2LLd4d4vFWdTUJuYw-HmnYo3oM5sH34fs10Cqf7Qb6oRFL-bnZLz5c3NnmRIRgrwteJGJmXOuTa2eyP0aFAPyXIyHtWO5YaxN7-PEoNJpNrM1nOSCw3Y_QuPWLq0nBvWl4h30fIos_Bhg5n6vMIVDTgVLyNN5II4LO9L65A8wrbyJimAyAkjwlbSBHBwENisQ2vl80T4pfezapbGRW1RHckkYaloILMNi9dsvgYXtHUQv2E-lXwF-hCccQ5ZE3sNiwZ0A_O2sjSw6oPTbB_nWbT3TB3dGEiykGrLlABBtCQTNp_H-sdP8sUwK3EmkGcS2-lnAQV8rUtwVCchGSvJIc8tJ2KoMGxDjxSZKIVapZZrpovc9_2j4nF7whGPifvM8jxepp8XkW2SzAQmOVKMZXoyF6_Nwq5bunetkLxp2HfIUQR8JQts5Bqz9DJGx3K1ZtZdHAVpCc9mZStkc3s-0WZtTFukOsGnB5QeE7u6PM4gKScQsozktmF_TmuN1qidUHZJa6q9V04m2RowlrV1SnbQc5GUq33YacFL_R2faHtPzxXt0ZN1O-6iXbRW1Zu4HxeiqjTJivk6ziPTcp-U1aXD-NPgZ46a21KL061Qj6kzc38_facarzCyv1tOdGgVk7OUpCipOSxjZEI9moBKWCzwKn8tQ8yojiCBGQ3xVTC1muEV_4Z2rNByuks5DbUqwKNKFsuIhgu2znFlZo79C1Cb4L36R8rmkoav9IWGvW_-1XVn0O_1-kE3GAyHgUd3-Lnb8fu9frc_xKfbvQ6CN4_-qyJ0_KDX7Q86QTDoDAfD66ve23_1IPGQ?type=png)](https://mermaid.live/edit#pako:eNqNVt9v2jAQ_lcsP21qGvGjZSEPlSpaTX1YxWDVpAmpMvZBIkicOQ6UVf3fd4mdEgcKzQOK47v7vjt_d-aVcimAhnSW5vC3gJTDXcyWiiWzlOCTMaVjHmcs1eQpB3X49Xb88J1p2LLd4d4vFWdTUJuYw-HmnYo3oM5sH34fs10Cqf7Qb6oRFL-bnZLz5c3NnmRIRgrwteJGJmXOuTa2eyP0aFAPyXIyHtWO5YaxN7-PEoNJpNrM1nOSCw3Y_QuPWLq0nBvWl4h30fIos_Bhg5n6vMIVDTgVLyNN5II4LO9L65A8wrbyJimAyAkjwlbSBHBwENisQ2vl80T4pfezapbGRW1RHckkYaloILMNi9dsvgYXtHUQv2E-lXwF-hCccQ5ZE3sNiwZ0A_O2sjSw6oPTbB_nWbT3TB3dGEiykGrLlABBtCQTNp_H-sdP8sUwK3EmkGcS2-lnAQV8rUtwVCchGSvJIc8tJ2KoMGxDjxSZKIVapZZrpovc9_2j4nF7whGPifvM8jxepp8XkW2SzAQmOVKMZXoyF6_Nwq5bunetkLxp2HfIUQR8JQts5Bqz9DJGx3K1ZtZdHAVpCc9mZStkc3s-0WZtTFukOsGnB5QeE7u6PM4gKScQsozktmF_TmuN1qidUHZJa6q9V04m2RowlrV1SnbQc5GUq33YacFL_R2faHtPzxXt0ZN1O-6iXbRW1Zu4HxeiqjTJivk6ziPTcp-U1aXD-NPgZ46a21KL061Qj6kzc38_facarzCyv1tOdGgVk7OUpCipOSxjZEI9moBKWCzwKn8tQ8yojiCBGQ3xVTC1muEV_4Z2rNByuks5DbUqwKNKFsuIhgu2znFlZo79C1Cb4L36R8rmkoav9IWGvW_-1XVn0O_1-kE3GAyHgUd3-Lnb8fu9frc_xKfbvQ6CN4_-qyJ0_KDX7Q86QTDoDAfD66ve23_1IPGQ)
 
 
-## Installation
-The project requires a couple tools to run, most of which are part of many developer's toolchains.
+## Local Development
 
-- Docker
-- Go
+**Prerequisites:**
+- Docker Desktop (includes Kubernetes)
+- Go 1.23+
 - Tilt
-- A local Kubernetes cluster
+- kubectl
 
-### MacOS
-
-1. Install Homebrew from [Homebrew's official website](https://brew.sh/)
-
-2. Install Docker for Desktop from [Docker's official website](https://www.docker.com/products/docker-desktop/)
-
-3. Install Minikube from [Minikube's official website](https://minikube.sigs.k8s.io/docs/)
-
-4. Install Tilt from [Tilt's official website](https://tilt.dev/)
-
-5. Install Go on MacOS using Homebrew:
+**Install (macOS):**
 ```bash
-brew install go
+brew install go tilt kubectl
+# Install Docker Desktop manually from docker.com
 ```
 
-6. Make sure [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/) is installed.
-
-### Windows (WSL)
-
-This is a step by step guide to install Go on Windows using WSL.
-You can either install via WSL (recommended) or using powershell (not covered, but similar to WSL).
-
-1. Install WSL for Windows from [Microsoft's official website](https://learn.microsoft.com/en-us/windows/wsl/install)
-
-2. Install Docker for Windows from [Docker's official website](https://www.docker.com/products/docker-desktop/)
-
-3. Install Minikube from [Minikube's official website](https://minikube.sigs.k8s.io/docs/)
-
-4. Install Tilt from [Tilt's official website](https://tilt.dev/)
-
-5. Install Go on Windows using WSL:
-```bash
-# 1. Get the Go binary
-wget https://dl.google.com/go/go1.23.0.linux-amd64.tar.gz
-
-# 2. Extract the tarball
-sudo tar -xvf go1.23.0.linux-amd64.tar.gz
-
-# 3. Move the extracted folder to /usr/local
-sudo mv go /usr/local
-
-# 4. Add Go to PATH (following the steps from the video)
-cd ~
-explorer.exe .
-
-# Open .bashrc file and add following lines at the bottom and save the file.
-export GOROOT=/usr/local/go
-export GOPATH=$HOME/go
-export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-
-# 5. Verify the installation
-go version
-```
-
-6. Make sure [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/) is installed.
-
-## Run
-
+**Run:**
 ```bash
 tilt up
 ```
 
-## Monitor
-
+**Monitor:**
 ```bash
 kubectl get pods
-```
-
-or
-
-```bash
+# or
 minikube dashboard
 ```
 
-## Deployment (Google Cloud example)
-It's advisable to first run the steps manually and then build a proper CI/CD flow according to your infrastructure.
+## Deployment
 
-## 0. Environments
+Fully automated CI/CD pipeline using Terraform, GitHub Actions, and ArgoCD.
+
+### Infrastructure (Terraform)
+
+Provisions GKE cluster + Artifact Registry.
+
 ```bash
-REGION: europe-west1 # change according to your location
-PROJECT_ID: <your-gcp-project-id>
+cd infra/terraform
+
+# Configure
+cp terraform.tfvars.example terraform.tfvars
+# Edit: set your project_id
+
+# Apply
+gcloud auth application-default login
+terraform init
+terraform apply
 ```
 
-## 1. Add secrets.yaml file to the production folder
+**What gets created:**
+- GKE cluster (autopilot, 3 zones)
+- Artifact Registry (`ride-sharing` repo)
+- IAM permissions
 
-Production folder needs to contain a secrets.yaml for the production environment, you can just copy secrets from the development folder for now.
+### CI/CD Pipeline (GitHub Actions)
 
-## 2. Build Docker Images
-Build all docker images and tag them accordingly to push to Artifact Registry.
-```bash
-# Build the Api gateway 
-docker build -t {REGION}-docker.pkg.dev/{PROJECT_ID}/ride-sharing/api-gateway:latest --platform linux/amd64 -f infra/production/docker/api-gateway.Dockerfile .
+Automated on every push to `main`:
 
-# Build the Driver service 
-docker build -t {REGION}-docker.pkg.dev/{PROJECT_ID}/ride-sharing/driver-service:latest --platform linux/amd64 -f infra/production/docker/driver-service.Dockerfile .
+**1. Build & Push**
+- Compiles Go services
+- Builds Docker images (tagged with commit SHA)
+- Pushes to Artifact Registry
 
-# Build the Trip service 
-docker build -t {REGION}-docker.pkg.dev/{PROJECT_ID}/ride-sharing/trip-service:latest --platform linux/amd64 -f infra/production/docker/trip-service.Dockerfile .
+**2. Update Manifests**
+- Updates `kustomization.yaml` with new image tag
+- Commits back to repo (GitOps)
 
-# Build the Payment service 
-docker build -t {REGION}-docker.pkg.dev/{PROJECT_ID}/ride-sharing/payment-service:latest --platform linux/amd64 -f infra/production/docker/payment-service.Dockerfile .
+**Setup GitHub Secrets:**
+```
+GCP_SA_KEY       → Service account JSON (from Terraform output)
+GCP_PROJECT_ID   → Your GCP project ID
+GCP_REGION       → us-west1
 ```
 
-## 3. Create a Artifact Registry repository
-Go to Google Cloud > Artifact Registry and manually create a docker repository to host your project images. 
+### GitOps (ArgoCD)
 
+Auto-syncs cluster with Git repo.
 
-## 4. Push the Docker images to artifact registry
-
-Docker push the images. 
-If you get errors pushing:
-1. Make sure to `gcloud login`, select the right project or even `gcloud init`.
-2. Configure artifact on your docker config `gcloud auth configure-docker {REGION}-docker.pkg.dev` [Docs](https://cloud.google.com/artifact-registry/docs/docker/pushing-and-pulling#cred-helper)
-
-
-## 5. Create a Google Kubernetes Cluster
-You can either run a `gcloud` command to start a GKE cluster or manually create a cluster on the UI (recommended).
-
-## 6. Update manifests files
-
-Connect to your remote cluster and apply the kubernetes manifests.
-
+**Install ArgoCD:**
 ```bash
-gcloud container clusters get-credentials ride-sharing --region {REGION}--project {PROJECT_ID}
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+# Access UI
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+# Username: admin
+# Password: kubectl -n argocd get secret argocd-initial-admin-password -o jsonpath="{.data.password}" | base64 -d
 ```
 
-Next, upload each manifest by hand to make sure the correct order is maintained.
-
+**Deploy app:**
 ```bash
-# First, apply the app-config and secrets
-kubectl apply -f infra/production/k8s/app-config.yaml
-kubectl apply -f infra/production/k8s/secrets.yaml
-
-# Jaeger
-kubectl apply -f infra/production/k8s/jaeger-deployment.yaml
-
-# RabbitMQ
-kubectl apply -f infra/production/k8s/rabbitmq-deployment.yaml
-
-# Wait for both Jaeger and RabbitMQ to be running successfully
-
-# Then, apply the services
-kubectl apply -f infra/production/k8s/api-gateway-deployment.yaml
-# Wait until the API is up and then do the next and so on...
-kubectl apply -f infra/production/k8s/driver-service-deployment.yaml
-kubectl apply -f infra/production/k8s/trip-service-deployment.yaml
-kubectl apply -f infra/production/k8s/payment-service-deployment.yaml
+kubectl apply -f infra/argocd/application.yaml
 ```
 
-If you need to redeploy you can use the same command above or just `kubectl apply -f infra/production/k8s`
-Sometimes pods might need to be deleted for new ones to be deployed.
+**What happens:**
+- ArgoCD watches `infra/production/k8s/overlays/production`
+- Detects changes (from GitHub Actions commit)
+- Auto-syncs to cluster
+- Self-heals if manual changes occur
+
+### Deployment Flow
+
+```
+Push to main
+  ↓
+GitHub Actions builds images
+  ↓
+Updates kustomization.yaml (new image tag)
+  ↓
+Commits back to repo
+  ↓
+ArgoCD detects change
+  ↓
+Syncs to GKE cluster
+  ↓
+Pods restart with new image
+```
+
+**No manual kubectl commands needed.**
+
+### Check Deployment
 
 ```bash
+# Get external IP
+kubectl get ingress
+
+# Check ArgoCD sync status
+kubectl get applications -n argocd
+
+# View pods
 kubectl get pods
-kubectl delete pod <pod-name>
 
-# or for all deployments
-kubectl rollout restart deployment
+# Switch back to local cluster
+kubectl config use-context docker-desktop  # or minikube
 ```
 
-## 7. Enjoy!
-```bash
-Get the External IP from the api-gateway
-kubectl get services
-```
+### Access Production
 
-Go back to locally developing your project by changing kubernetes context
-```bash
-kubectl config get-contexts
-
-# For Docker Desktop
-kubectl config use-context docker-desktop
-
-# OR for Minikube
-kubectl config use-context minikube
-```
-
-## Adding HTTPS to your API
-0. Reserve a static IP in GCP:
-Go to the Google Cloud Console → VPC Network → External IP addresses.
-Click "RESERVE STATIC ADDRESS".
-Name it api-gateway-ip (to match your annotation).
-Choose the same region as your GKE cluster (or "global" if using a global Ingress).
-
-Confirm your IP exists:
-```bash
-gcloud compute addresses list
-```
-
-1. Add the ingress deployment
-2. Change from LoadBalancer to ClusterIP
-3. Apply the config
-```bash
-kubectl apply -f infra/production/k8s/api-gateway-ingress.yaml
-kubectl apply -f infra/production/k8s/api-gateway-deployment.yaml
-```
-4. Get the IP address: 
-```bash
-kubectl get ingress api-gateway-ingress
-```
-
-You should also wait for SSL certificate to be provisioned. Check the status:
+ArgoCD creates Ingress with Google-managed SSL.
 
 ```bash
-kubectl describe managedcertificate api-gateway-cert
+kubectl get ingress
+# Visit: https://<INGRESS_IP>
 ```
-
-Once the certificate is provisioned (you'll see a "Provisioning" status change to "Active")
-
-5. The Ingress will automatically provision a Google-managed SSL certificate for the IP address. You can access your API using:
-```bash
-https://<IP_ADDRESS>
-```
-
-Note: Since this is using a self-signed certificate, browsers will show a security warning. This is normal and expected. You can:
-Accept the warning in your browser (not recommended for production)
-Use a proper domain name (recommended for production)

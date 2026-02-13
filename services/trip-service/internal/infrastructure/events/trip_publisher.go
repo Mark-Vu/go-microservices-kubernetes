@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"ride-sharing/services/trip-service/internal/domain"
+	"ride-sharing/shared/contracts"
 	"ride-sharing/shared/messaging"
 )
 
@@ -17,18 +19,16 @@ func NewTripPublisher(rabbitmq *messaging.RabbitMQ) *TripEventPublisher {
 }
 
 func (p *TripEventPublisher) PublishTripCreated(ctx context.Context, trip *domain.TripModel) error {
-	event := TripCreatedEvent{
-		TripID:      trip.ID.Hex(),
-		UserID:      trip.UserID,
-		Status:      trip.Status,
-		PackageSlug: trip.RideFareModel.PackageSlug,
-		FarePrice:   trip.RideFareModel.TotalPriceInCents,
-	}
-	body, err := json.Marshal(event)
+	tripJson, err := json.Marshal(trip)
 	if err != nil {
 		return fmt.Errorf("failed to marshal event: %w", err)
 	}
+	body := contracts.AmqpMessage{
+		OwnerID: trip.UserID,
+		Data:    tripJson,
+	}
 
+	log.Printf("Publishing trip created event to %s with body %s", messaging.TripExchange, body)
 	return p.rabbitmq.Publish(ctx, messaging.TripExchange, body)
 }
 

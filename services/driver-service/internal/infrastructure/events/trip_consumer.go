@@ -2,7 +2,10 @@ package events
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log"
+	"ride-sharing/shared/contracts"
 	"ride-sharing/shared/messaging"
 
 	"github.com/rabbitmq/amqp091-go"
@@ -28,6 +31,11 @@ func (c *TripConsumer) Start(ctx context.Context) error {
 
 func (c *TripConsumer) handleTripCreated(msg amqp091.Delivery) error {
 	log.Printf("Received trip created event: %s", string(msg.Body))
+	var tripEvent contracts.AmqpMessage
+	if err := json.Unmarshal(msg.Body, &tripEvent); err != nil {
+		log.Printf("Failed to unmarshal trip event: %v", err)
+		return fmt.Errorf("failed to unmarshal trip event: %w", err)
+	}
 
 	// TODO: Unmarshal and process
 	// var event TripCreatedEvent

@@ -47,3 +47,23 @@ func ToProtoRideFares(fares []*domain.RideFareModel) []*pb.RideFare {
 	}
 	return protoFares
 }
+
+func ToProtoRideFare(fare *domain.RideFareModel) *pb.RideFare {
+	return &pb.RideFare{
+		Id:                fare.ID.Hex(),
+		UserID:            fare.UserID,
+		PackageSlug:       fare.PackageSlug,
+		TotalPriceInCents: fare.TotalPriceInCents,
+	}
+}
+
+func ToProtoTrip(t *domain.TripModel) *pb.Trip {
+	return &pb.Trip{
+		Id:           t.ID.Hex(),
+		UserID:       t.UserID,
+		Status:       t.Status,
+		SelectedFare: ToProtoRideFare(t.RideFareModel),
+		Driver:       t.Driver,
+		Route:        osrmToProtoRoute(t.RideFareModel.Route),
+	}
+}
