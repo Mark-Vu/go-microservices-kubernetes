@@ -38,13 +38,24 @@ func (h *gRPCHandler) RegisterDriver(ctx context.Context, req *pb.RegisterDriver
 		return nil, status.Errorf(codes.Internal, "failed to register driver: %v", err)
 	}
 
-	// Convert domain model to proto response
+	// Service returns proto directly
 	return &pb.RegisterDriverResponse{
-		Driver: ToProtoDriver(driver),
+		Driver: driver,
 	}, nil
 }
 
 func (h *gRPCHandler) UnregisterDriver(ctx context.Context, req *pb.RegisterDriverRequest) (*pb.RegisterDriverResponse, error) {
-	// TODO: Implement unregister logic
-	return nil, status.Error(codes.Unimplemented, "method UnregisterDriver not implemented")
+	if req.DriverID == "" {
+		return nil, status.Error(codes.InvalidArgument, "driverID is required")
+	}
+
+	err := h.service.UnregisterDriver(ctx, req.DriverID)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to unregister driver: %v", err)
+	}
+
+	// Return nil driver to indicate unregistration
+	return &pb.RegisterDriverResponse{
+		Driver: nil,
+	}, nil
 }

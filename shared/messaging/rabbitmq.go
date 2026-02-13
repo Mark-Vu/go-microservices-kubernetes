@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	TripExchange    string = "trip"
-	DriverExchange  string = "driver"
-	PaymentExchange string = "payment"
+	TripExchange    string = "trip-exchange"
+	DriverExchange  string = "driver-exchange"
+	PaymentExchange string = "payment-exchange"
 )
 
 type RabbitMQ struct {
@@ -116,7 +116,7 @@ func (r *RabbitMQ) Publish(ctx context.Context, routingKey string, body contract
 	)
 }
 
-type MessageHandler func(msg amqp091.Delivery) error
+type MessageHandler func(ctx context.Context, msg amqp091.Delivery) error
 
 func (r *RabbitMQ) Consume(ctx context.Context, queueName string, handlerFunc MessageHandler) error {
 	if err := r.ch.Qos(
@@ -147,7 +147,7 @@ func (r *RabbitMQ) Consume(ctx context.Context, queueName string, handlerFunc Me
 			if !ok {
 				return fmt.Errorf("channel closed")
 			}
-			if err := handlerFunc(msg); err != nil {
+			if err := handlerFunc(ctx, msg); err != nil {
 				log.Printf("failed to process message: %v", err)
 				msg.Nack(false, true)
 			} else {

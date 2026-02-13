@@ -44,10 +44,10 @@ func main() {
 	defer rabbitmq.Close()
 	log.Printf("RabbitMQ client created successfully")
 
-	tripConsumer := events.NewTripConsumer(rabbitmq)
+	tripConsumer := events.NewTripConsumer(rabbitmq, driverService)
 	defer tripConsumer.Close()
 
-	// Start consumer in background
+	// listen for trip created events in background
 	go func() {
 		log.Println("Starting trip consumer...")
 		if err := tripConsumer.Start(context.Background()); err != nil {
