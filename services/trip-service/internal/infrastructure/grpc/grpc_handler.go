@@ -51,9 +51,15 @@ func (h *gRPCHandler) PreviewTrip(ctx context.Context, req *pb.PreviewTripReques
 		return nil, status.Errorf(codes.Internal, "failed to generate trip fares: %v", err)
 	}
 
+	// Convert fares slice to proto
+	protoFares := make([]*pb.RideFare, len(fares))
+	for i, fare := range fares {
+		protoFares[i] = fare.ToProto()
+	}
+
 	return &pb.PreviewTripResponse{
-		Route:     osrmToProtoRoute(route),
-		RideFares: ToProtoRideFares(fares),
+		Route:     route.ToProto(),
+		RideFares: protoFares,
 	}, nil
 }
 

@@ -19,7 +19,10 @@ func NewTripPublisher(rabbitmq *messaging.RabbitMQ) *TripEventPublisher {
 }
 
 func (p *TripEventPublisher) PublishTripCreated(ctx context.Context, trip *domain.TripModel) error {
-	tripJson, err := json.Marshal(trip)
+	payload := messaging.TripEventData{
+		Trip: trip.ToProto(),
+	}
+	tripJson, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("failed to marshal event: %w", err)
 	}
@@ -29,7 +32,7 @@ func (p *TripEventPublisher) PublishTripCreated(ctx context.Context, trip *domai
 	}
 
 	log.Printf("Publishing trip created event to %s with body %s", messaging.TripExchange, body)
-	return p.rabbitmq.Publish(ctx, messaging.TripExchange, body)
+	return p.rabbitmq.Publish(ctx, contracts.TripEventCreated, body)
 }
 
 func (p *TripEventPublisher) Close() error {

@@ -1,5 +1,7 @@
 package types
 
+import pb "ride-sharing/shared/proto/trip/v1"
+
 type Route struct {
 	Distance float64     `json:"distance"`
 	Duration float64     `json:"duration"`
@@ -15,6 +17,16 @@ type Coordinate struct {
 	Longitude float64 `json:"longitude"`
 }
 
+func (c *Coordinate) ToProto() *pb.Coordinate {
+	if c == nil {
+		return nil
+	}
+	return &pb.Coordinate{
+		Latitude:  c.Latitude,
+		Longitude: c.Longitude,
+	}
+}
+
 type OsrmApiResponse struct {
 	Routes []struct {
 		Distance float64 `json:"distance"`
@@ -23,4 +35,31 @@ type OsrmApiResponse struct {
 			Coordinates [][]float64 `json:"coordinates"`
 		} `json:"geometry"`
 	} `json:"routes"`
+}
+
+func (o *OsrmApiResponse) ToProto() *pb.Route {
+	if o == nil || len(o.Routes) == 0 {
+		return nil
+	}
+
+	route := o.Routes[0]
+	geometry := route.Geometry.Coordinates
+	coordinates := make([]*pb.Coordinate, len(geometry))
+
+	for i, coord := range geometry {
+		coordinates[i] = &pb.Coordinate{
+			Latitude:  coord[0],
+			Longitude: coord[1],
+		}
+	}
+
+	return &pb.Route{
+		Geometry: []*pb.Geometry{
+			{
+				Coordinates: coordinates,
+			},
+		},
+		Distance: route.Distance,
+		Duration: route.Duration,
+	}
 }

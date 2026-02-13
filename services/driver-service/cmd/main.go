@@ -45,10 +45,15 @@ func main() {
 	log.Printf("RabbitMQ client created successfully")
 
 	tripConsumer := events.NewTripConsumer(rabbitmq)
-	if err := tripConsumer.Start(context.Background()); err != nil {
-		log.Fatalf("failed to start trip consumer: %v", err)
-	}
 	defer tripConsumer.Close()
+
+	// Start consumer in background
+	go func() {
+		log.Println("Starting trip consumer...")
+		if err := tripConsumer.Start(context.Background()); err != nil {
+			log.Printf("Trip consumer error: %v", err)
+		}
+	}()
 	log.Printf("Trip consumer started successfully")
 
 	serverError := make(chan error, 1)

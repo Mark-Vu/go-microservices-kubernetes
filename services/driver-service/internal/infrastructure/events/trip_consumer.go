@@ -36,15 +36,13 @@ func (c *TripConsumer) handleTripCreated(msg amqp091.Delivery) error {
 		log.Printf("Failed to unmarshal trip event: %v", err)
 		return fmt.Errorf("failed to unmarshal trip event: %w", err)
 	}
+	var payload messaging.TripEventData
+	if err := json.Unmarshal(tripEvent.Data, &payload); err != nil {
+		log.Printf("Failed to unmarshal trip event data: %v", err)
+		return fmt.Errorf("failed to unmarshal trip event data: %w", err)
+	}
 
-	// TODO: Unmarshal and process
-	// var event TripCreatedEvent
-	// if err := json.Unmarshal(msg.Body, &event); err != nil {
-	//     return err
-	// }
-
-	// TODO: Business logic (assign driver, etc.)
-
+	log.Printf("Trip created event received: %+v", payload)
 	return nil
 }
 
