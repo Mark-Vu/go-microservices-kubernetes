@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"ride-sharing/services/driver-service/internal/infrastructure/events"
 	g "ride-sharing/services/driver-service/internal/infrastructure/grpc"
 	"ride-sharing/services/driver-service/internal/infrastructure/repository"
 	"ride-sharing/services/driver-service/internal/service"
@@ -42,6 +43,13 @@ func main() {
 	}
 	defer rabbitmq.Close()
 	log.Printf("RabbitMQ client created successfully")
+
+	tripConsumer := events.NewTripConsumer(rabbitmq)
+	if err := tripConsumer.Start(context.Background()); err != nil {
+		log.Fatalf("failed to start trip consumer: %v", err)
+	}
+	defer tripConsumer.Close()
+	log.Printf("Trip consumer started successfully")
 
 	serverError := make(chan error, 1)
 	go func() {

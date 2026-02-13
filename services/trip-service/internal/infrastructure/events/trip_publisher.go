@@ -29,7 +29,7 @@ func (p *TripEventPublisher) PublishTripCreated(ctx context.Context, trip *domai
 		return fmt.Errorf("failed to marshal event: %w", err)
 	}
 
-	return p.rabbitmq.Publish(ctx, "trip.event.created", body)
+	return p.rabbitmq.Publish(ctx, messaging.TripExchange, body)
 }
 
 func (p *TripEventPublisher) Close() error {
